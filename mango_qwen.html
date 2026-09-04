@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en" data-color-mode="muted">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mango Management Visual System — Spec + Recipes v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS (Appendix A, verbatim) ============ */
+:root{
+  --base:#fbfaf7; --base-2:#f5f2eb; --ink:#1f2528; --ink-2:#4b555c; --line:rgba(31,37,40,.10);
+  --mango-green:#6f8f6a; --mango-yellow:#d8c777; --mango-orange:#d49a63; --mango-red:#b87463;
+  --mango-green-vivid:#2E7D32; --mango-yellow-vivid:#FBC02D; --mango-orange-vivid:#F57C00; --mango-red-vivid:#C62828;
+  --surface-primary:rgba(255,255,255,.55); --surface-secondary:rgba(255,255,255,.45);
+  --tint-green:rgba(111,143,106,.10); --tint-yellow:rgba(216,199,119,.12); --tint-orange:rgba(212,154,99,.10);
+  --grad-gy:linear-gradient(135deg,rgba(111,143,106,.14),rgba(216,199,119,.12));
+  --grad-yo:linear-gradient(135deg,rgba(216,199,119,.14),rgba(212,154,99,.12));
+  --shadow-1:0 10px 24px rgba(31,37,40,.06); --shadow-2:0 16px 38px rgba(31,37,40,.10);
+  --font:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px; --space-5:48px; --space-6:64px; --space-7:80px; --space-8:120px;
+  --container-max:1200px; --grid-gutter:24px; --radius-sm:10px; --radius-md:14px; --radius-lg:18px;
+}
+/* ============ BASE ============ */
+*{box-sizing:border-box; margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--base); color:var(--ink); font-family:var(--font); font-size:16px; line-height:26px; -webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *,*::before,*::after{transition:none!important; animation:none!important} }
+a{color:inherit}
+button,input{font-family:var(--font)}
+a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--mango-yellow); outline-offset:2px; border-radius:6px}
+.container{max-width:var(--container-max); margin:0 auto; padding:0 var(--grid-gutter)}
+.container-narrow{max-width:880px; margin:0 auto; padding:0 var(--grid-gutter)}
+.section{padding:var(--space-7) 0}
+.section-loose{padding:var(--space-8) 0}
+.bg-base-2{background:var(--base-2)} .bg-tint-yellow{background:var(--tint-yellow)} .bg-tint-orange{background:var(--tint-orange)}
+/* ============ TYPE ============ */
+.text-display{font-size:48px; line-height:52px; font-weight:700; letter-spacing:-.02em}
+.text-h1{font-size:42px; line-height:48px; font-weight:700; letter-spacing:-.02em}
+.text-h2{font-size:34px; line-height:40px; font-weight:500; letter-spacing:-.01em}
+.text-h3{font-size:27px; line-height:32px; font-weight:500; letter-spacing:-.01em}
+.text-h4{font-size:22px; line-height:28px; font-weight:500}
+.text-h5{font-size:18px; line-height:24px; font-weight:500}
+.text-body{font-size:16px; line-height:26px}
+.text-small{font-size:14px; line-height:22px}
+.text-micro{font-size:12px; line-height:16px; letter-spacing:.01em}
+.ink-2{color:var(--ink-2)}
+.eyebrow{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2)}
+.eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--mango-green); flex-shrink:0}
+.eyebrow .dot.y{background:var(--mango-yellow)} .eyebrow .dot.o{background:var(--mango-orange)} .eyebrow .dot.r{background:var(--mango-red)}
+.mono{font-family:var(--mono)}
+/* ============ LAYOUT UTILS ============ */
+.grid{display:grid; gap:var(--grid-gutter)}
+.g-2{grid-template-columns:repeat(2,1fr)} .g-3{grid-template-columns:repeat(3,1fr)} .g-4{grid-template-columns:repeat(4,1fr)} .g-5{grid-template-columns:repeat(5,1fr)}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}.mt-5{margin-top:48px}.mt-6{margin-top:64px}
+.flex{display:flex; align-items:center} .wrap{flex-wrap:wrap} .gap-1{gap:8px}.gap-2{gap:16px}.gap-3{gap:24px}
+@media (max-width:1024px){ .g-4,.g-5{grid-template-columns:repeat(2,1fr)} .g-3{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:640px){ .g-2,.g-3,.g-4,.g-5{grid-template-columns:1fr} .text-display{font-size:34px;line-height:40px} .text-h2{font-size:27px;line-height:32px} .container,.container-narrow{padding:0 20px} }
+/* ============ TOPBAR ============ */
+.topbar{position:sticky; top:0; z-index:50; background:rgba(251,250,247,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.topbar-inner{display:flex; align-items:center; gap:12px; height:64px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em; text-decoration:none}
+.nav{margin-left:auto; display:flex; gap:2px}
+.nav a{font-size:14px; color:var(--ink-2); text-decoration:none; padding:6px 10px; border-radius:var(--radius-sm); transition:background-color 200ms ease,color 200ms ease}
+.nav a:hover{background:var(--surface-primary); color:var(--ink)}
+.badge{font-size:12px; letter-spacing:.01em; border:1px solid var(--line); border-radius:999px; padding:4px 10px; color:var(--ink-2); background:var(--surface-primary); white-space:nowrap}
+@media (max-width:900px){ .nav{display:none} }
+/* ============ BUTTONS (spec 1.2) ============ */
+.btn-primary,.btn-secondary,.btn-tertiary{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:14px; border:1px solid rgba(111,143,106,.35); background:rgba(111,143,106,.16); color:var(--ink); font-size:14px; font-weight:500; line-height:1.2; box-shadow:var(--shadow-1); transition:box-shadow 200ms ease, background-color 200ms ease; cursor:pointer; text-decoration:none}
+.btn-primary:hover{box-shadow:var(--shadow-2); background:rgba(111,143,106,.22)}
+.btn-primary:active{background:rgba(111,143,106,.28)}
+.btn-primary:focus-visible,.btn-secondary:focus-visible,.btn-tertiary:focus-visible{outline:2px solid var(--mango-yellow); outline-offset:2px}
+.btn-primary:disabled{background:var(--base-2); color:var(--ink-2); border-color:var(--line); box-shadow:none; cursor:not-allowed; opacity:.5}
+.btn-secondary{border-color:rgba(216,199,119,.35); background:rgba(216,199,119,.16)}
+.btn-secondary:hover{box-shadow:var(--shadow-2); background:rgba(216,199,119,.22)}
+.btn-tertiary{border-color:var(--line); background:transparent}
+.btn-tertiary:hover{background:var(--surface-primary); box-shadow:var(--shadow-1)}
+.demo-focus{outline:2px solid var(--mango-yellow); outline-offset:2px}
+/* ============ CARDS (spec 1.2) ============ */
+.card{background:var(--surface-primary); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow-1); transition:box-shadow 220ms ease}
+.card:hover{box-shadow:var(--shadow-2)}
+.card-pad{padding:24px}
+.card-soft{background:var(--surface-secondary)}
+.card-tint-green{background:var(--tint-green)}
+.card-tint-yellow{background:var(--tint-yellow)}
+.card-tint-orange{background:var(--tint-orange)}
+/* ============ INPUTS (spec 1.2) ============ */
+.input{width:100%; padding:10px 14px; border-radius:14px; border:1px solid var(--line); background:var(--surface-primary); color:var(--ink); font-size:16px; line-height:1.5; transition:border-color 150ms ease, box-shadow 150ms ease}
+.input:hover{border-color:rgba(31,37,40,.20)}
+.input:focus{outline:none; border-color:var(--mango-yellow); box-shadow:0 0 0 3px rgba(216,199,119,.15)}
+.input:disabled{background:var(--base-2); color:var(--ink-2); cursor:not-allowed}
+.input.is-focus{border-color:var(--mango-yellow); box-shadow:0 0 0 3px rgba(216,199,119,.15)}
+.input-success{border-color:var(--mango-green-vivid)}
+.input-error{border-color:var(--mango-red-vivid)}
+.field label{display:block; font-size:12px; letter-spacing:.01em; color:var(--ink-2); margin-bottom:6px}
+/* ============ TABLES (recipe 2.2) ============ */
+.table-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow-1); background:var(--surface-primary)}
+.data-table{width:100%; border-collapse:collapse; font-size:16px; min-width:560px}
+.data-table th{text-align:left; padding:16px; background:var(--base-2); font-weight:500; color:var(--ink)}
+.data-table td{padding:16px; border-bottom:1px solid var(--line); vertical-align:top}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr:nth-child(even){background:rgba(255,255,255,.30)}
+.data-table .positive{color:var(--mango-green-vivid); font-weight:500}
+.data-table .negative{color:var(--mango-red-vivid); font-weight:500}
+.data-table code{font-family:var(--mono); font-size:13px; color:var(--ink-2)}
+/* ============ CODE ============ */
+.code{background:var(--base-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; font-family:var(--mono); font-size:12.5px; line-height:1.65; color:var(--ink-2); overflow:auto; white-space:pre; tab-size:2}
+.code .k{color:var(--mango-green); font-weight:500}
+.code .s{color:var(--mango-orange)}
+.code .c{color:#9aa0a5; font-style:italic}
+.code-head{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); margin-bottom:8px}
+.code-head::before{content:""; width:8px; height:8px; border-radius:3px; background:var(--mango-yellow)}
+/* ============ SWATCHES ============ */
+.swatch{border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; background:var(--surface-primary); box-shadow:var(--shadow-1); transition:box-shadow 220ms ease}
+.swatch:hover{box-shadow:var(--shadow-2)}
+.swatch-color{height:64px; border-bottom:1px solid var(--line)}
+.swatch-body{padding:12px 14px}
+.swatch-body .tok{font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink)}
+.swatch-body .hex{font-family:var(--mono); font-size:11px; color:var(--ink-2)}
+.swatch-body .use{font-size:12px; line-height:18px; color:var(--ink-2); margin-top:4px}
+.pass{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:500; color:var(--mango-green-vivid)}
+.fail{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:500; color:var(--mango-red-vivid)}
+/* ============ TYPE SPECIMEN ============ */
+.type-row{display:grid; grid-template-columns:230px 1fr; gap:24px; align-items:baseline; padding:20px 0; border-bottom:1px solid var(--line)}
+.type-row:last-child{border-bottom:none}
+.type-meta{font-family:var(--mono); font-size:12px; color:var(--ink-2)}
+.type-meta .tok{display:block; color:var(--ink); font-weight:500; margin-bottom:2px}
+@media (max-width:640px){ .type-row{grid-template-columns:1fr; gap:8px} }
+/* ============ SPACING / RADII / SHADOW ============ */
+.space-row{display:grid; grid-template-columns:110px 1fr 60px; gap:16px; align-items:center; padding:6px 0}
+.space-bar{height:14px; border-radius:4px; background:var(--mango-yellow); border:1px solid rgba(216,199,119,.5)}
+.radius-chip{width:88px; height:88px; background:var(--surface-primary); border:1px solid var(--line); box-shadow:var(--shadow-1)}
+/* ============ STEPS (recipe 2.2) ============ */
+.step{display:flex; gap:12px; align-items:flex-start; padding:12px; border-radius:18px; border:1px solid var(--line); background:var(--surface-primary); box-shadow:var(--shadow-1); transition:box-shadow 220ms ease}
+.step:hover{box-shadow:var(--shadow-2)}
+.step-num{width:28px; height:28px; border-radius:10px; color:var(--base); background:var(--mango-green); display:grid; place-items:center; font-weight:700; font-size:13px; flex-shrink:0}
+.step-num.n2{background:var(--mango-yellow); color:var(--ink)}
+.step-num.n3{background:var(--mango-orange)}
+.step-num.n4{background:var(--ink-2)}
+/* ============ METRICS (recipe 2.2) ============ */
+.metric{font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--ink)}
+.metric-label{font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); margin-top:2px}
+[data-color-mode="ripe"] .metric-ripe, .metric-ripe{color:var(--mango-orange-vivid)}
+.metric-display{font-size:48px; line-height:52px; font-weight:700; letter-spacing:-.02em; color:var(--mango-orange-vivid)}
+/* ============ LAYERS (surface hierarchy) ============ */
+.layer{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; border:1px solid var(--line); font-size:12px; color:var(--ink-2); margin-bottom:6px; background:var(--base)}
+.layer b{color:var(--ink); font-weight:500}
+.layer .tok{font-family:var(--mono); font-size:10.5px; white-space:nowrap}
+.layer-l1{background:var(--base-2)} .layer-l3g{background:var(--tint-green)} .layer-l3y{background:var(--tint-yellow)} .layer-l4{background:var(--grad-yo)}
+.layer-cover{background:linear-gradient(135deg,#FF9800,#FFC107); border-color:transparent; color:var(--ink)}
+/* ============ BADGES (ripe exceptions) ============ */
+.rbadge{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:500; color:#fff}
+.rbadge.g{background:var(--mango-green-vivid)} .rbadge.o{background:var(--mango-orange-vivid)} .rbadge.r{background:var(--mango-red-vivid)}
+.rbadge.y{background:var(--mango-yellow-vivid); color:var(--ink)}
+/* ============ CHECKLIST ============ */
+.check{display:flex; gap:12px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid var(--line); font-size:14px; line-height:22px; color:var(--ink)}
+.check:last-child{border-bottom:none}
+.check input{appearance:none; -webkit-appearance:none; width:18px; height:18px; margin-top:2px; border:1px solid var(--line); border-radius:6px; background:var(--surface-primary); display:inline-grid; place-content:center; cursor:pointer; flex-shrink:0}
+.check input:checked{background:var(--mango-green); border-color:var(--mango-green)}
+.check input:checked::after{content:""; width:9px; height:5px; border-left:2px solid var(--base); border-bottom:2px solid var(--base); transform:rotate(-45deg) translateY(-1px)}
+/* ============ MISC ============ */
+.icon{width:24px; height:24px; opacity:.9; color:var(--ink); flex-shrink:0}
+.icon-text{display:inline-flex; align-items:center; gap:8px}
+.divider{height:1px; background:var(--line); border:none; margin:var(--space-5) 0}
+.chip{display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-2); border:1px solid var(--line); background:var(--surface-primary); border-radius:999px; padding:6px 12px; text-decoration:none; transition:box-shadow 200ms ease, background-color 200ms ease}
+.chip:hover{box-shadow:var(--shadow-1); background:rgba(255,255,255,.75); color:var(--ink)}
+.hero{position:relative; overflow:hidden}
+.hero-glow{position:absolute; inset:auto -10% -40% auto; width:640px; height:640px; background:var(--grad-gy); filter:blur(20px); pointer-events:none}
+.thumb{border-radius:var(--radius-md); border:1px solid var(--line); overflow:hidden; background:var(--base-2); display:block; width:100%}
+svg text{font-family:var(--font); fill:#4b555c; font-size:12px}
+.footer{border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="#top" aria-label="Mango Management home">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="7" fill="#d49a63"/><path d="M12 7c.5-3 2.5-4.6 5.6-5.1-.5 3.1-2.5 4.7-5.6 5.1z" fill="#6f8f6a"/></svg>
+      Mango Management
+    </a>
+    <span class="badge">Visual System v1.0</span>
+    <span class="badge" style="display:none" id="mode"></span>
+    <nav class="nav" aria-label="Sections">
+      <a href="#tokens">Tokens</a>
+      <a href="#components">Components</a>
+      <a href="#charts">Charts</a>
+      <a href="#recipes">Recipes</a>
+      <a href="#errors">Guardrails</a>
+      <a href="#implementation">Implementation</a>
+    </nav>
+    <span class="badge">mode: muted</span>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO · LEVEL 0 ================= -->
+<section class="hero section-loose" style="padding-top:96px">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="container" style="position:relative">
+    <p class="eyebrow"><span class="dot"></span> Spec + Recipes Document · Derived from Canonical Document v1.0 · Confirmed 2026-02-06</p>
+    <h1 class="text-display mt-3" style="max-width:820px">Mango Management<br>Visual System.</h1>
+    <p class="text-body ink-2 mt-3" style="max-width:640px">One muted palette for daily trust, one ripe palette reserved for moments of proof. Tokens, components, charts, and page recipes — implementation ready, version 1.0.</p>
+    <div class="flex gap-2 wrap mt-4">
+      <a class="btn-primary" href="#tokens">
+        <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Browse specifications
+      </a>
+      <a class="btn-tertiary" href="#recipes">View recipes</a>
+    </div>
+    <div class="flex gap-1 wrap mt-5">
+      <a class="chip" href="#tokens">Part 1 · Specifications</a>
+      <a class="chip" href="#recipes">Part 2 · Recipes</a>
+      <a class="chip" href="#implementation">Part 3 · Implementation</a>
+      <a class="chip" href="#appendix">Appendix A · Quick reference</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PART 1 · 1.1 TOKENS · LEVEL 1 ================= -->
+<section id="tokens" class="section bg-base-2">
+  <div class="container">
+    <p class="eyebrow"><span class="dot"></span> Part 1 · Specifications</p>
+    <h2 class="text-h2 mt-2">1.1 Design Tokens, final</h2>
+    <p class="text-body ink-2 mt-2" style="max-width:680px">Every value on this page resolves to a token below. No hex values appear outside this table — that is the entire point.</p>
+
+    <h3 class="text-h4 mt-5">Core color tokens</h3>
+    <div class="grid g-5 mt-3">
+      <div class="swatch"><div class="swatch-color" style="background:#fbfaf7"></div><div class="swatch-body"><div class="tok">--base</div><div class="hex">#fbfaf7</div><div class="use">Page background</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#f5f2eb"></div><div class="swatch-body"><div class="tok">--base-2</div><div class="hex">#f5f2eb</div><div class="use">Alternating sections</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#1f2528"></div><div class="swatch-body"><div class="tok">--ink</div><div class="hex">#1f2528</div><div class="use">Primary text</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#4b555c"></div><div class="swatch-body"><div class="tok">--ink-2</div><div class="hex">#4b555c</div><div class="use">Secondary text</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:linear-gradient(#fbfaf7 46%, rgba(31,37,40,.35) 46%, rgba(31,37,40,.35) 54%, #fbfaf7 54%)"></div><div class="swatch-body"><div class="tok">--line</div><div class="hex">rgba(31,37,40,0.10)</div><div class="use">Borders, dividers</div></div></div>
+    </div>
+
+    <div class="grid g-2 mt-5">
+      <div>
+        <h3 class="text-h4">Muted Mango <span class="badge">default</span></h3>
+        <div class="grid g-2 mt-3">
+          <div class="swatch"><div class="swatch-color" style="background:#6f8f6a"></div><div class="swatch-body"><div class="tok">--mango-green</div><div class="hex">#6f8f6a · L* 54.0</div><div class="use">Primary actions, stability</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#d8c777"></div><div class="swatch-body"><div class="tok">--mango-yellow</div><div class="hex">#d8c777 · L* 62.0</div><div class="use">Secondary, clarity, selection</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#d49a63"></div><div class="swatch-body"><div class="tok">--mango-orange</div><div class="hex">#d49a63 · L* 59.0</div><div class="use">Accent, momentum</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#b87463"></div><div class="swatch-body"><div class="tok">--mango-red</div><div class="hex">#b87463 · L* 45.0</div><div class="use">Stakes, micro-accent</div></div></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-h4">Ripe Mango <span class="badge">restricted</span></h3>
+        <div class="grid g-2 mt-3">
+          <div class="swatch"><div class="swatch-color" style="background:#2E7D32"></div><div class="swatch-body"><div class="tok">--mango-green-vivid</div><div class="hex">#2E7D32 · 5.8:1 on white</div><div class="use"><span class="pass">✓ pass</span> · Success text, primary ripe</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#FBC02D"></div><div class="swatch-body"><div class="tok">--mango-yellow-vivid</div><div class="hex">#FBC02D · 1.8:1 on white</div><div class="use"><span class="fail">✕ fail</span> · Backgrounds, icons only</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#F57C00"></div><div class="swatch-body"><div class="tok">--mango-orange-vivid</div><div class="hex">#F57C00 · 4.9:1 on white</div><div class="use"><span class="pass">✓ pass</span> · CTA text, ripe emphasis</div></div></div>
+          <div class="swatch"><div class="swatch-color" style="background:#C62828"></div><div class="swatch-body"><div class="tok">--mango-red-vivid</div><div class="hex">#C62828 · 7.0:1 on white</div><div class="use"><span class="pass">✓ pass</span> · Error text, danger</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="text-h4 mt-5">Derived surfaces</h3>
+    <div class="grid g-4 mt-3">
+      <div class="swatch"><div class="swatch-color" style="background:rgba(255,255,255,.55)"></div><div class="swatch-body"><div class="tok">--surface-primary</div><div class="use">Cards, containers · 55% white</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:rgba(255,255,255,.45)"></div><div class="swatch-body"><div class="tok">--surface-secondary</div><div class="use">Disabled, nested · 45% white</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--tint-green)"></div><div class="swatch-body"><div class="tok">--tint-green</div><div class="use">Structural sections</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--tint-yellow)"></div><div class="swatch-body"><div class="tok">--tint-yellow</div><div class="use">Insight sections</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--tint-orange)"></div><div class="swatch-body"><div class="tok">--tint-orange</div><div class="use">Action sections</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--grad-gy)"></div><div class="swatch-body"><div class="tok">--grad-gy</div><div class="use">Green → yellow transition, 135°</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--grad-yo)"></div><div class="swatch-body"><div class="tok">--grad-yo</div><div class="use">Yellow → orange transition, 135°</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--base); box-shadow:inset 0 -14px 22px -14px rgba(31,37,40,.22)"></div><div class="swatch-body"><div class="tok">--shadow-1 / --shadow-2</div><div class="use">0 10px 24px · 0 16px 38px rgba(31,37,40,.06/.10)</div></div></div>
+    </div>
+
+    <div class="grid g-2 mt-5">
+      <div class="card card-pad">
+        <h3 class="text-h4">Typography scale</h3>
+        <p class="text-small ink-2 mt-1">Font stack: <span class="mono">"Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif</span></p>
+        <div class="mt-3">
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-display</span>48 / 52 · 700 · -0.02em</div><div class="text-display">Systems people actually use.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-h1</span>42 / 48 · 700 · -0.02em</div><div class="text-h1">Operations, observed closely.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-h2</span>34 / 40 · 500 · -0.01em</div><div class="text-h2">The signal most teams miss.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-h3</span>27 / 32 · 500 · -0.01em</div><div class="text-h3">Friction is information.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-h4</span>22 / 28 · 500</div><div class="text-h4">Process time drops to 45 minutes.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-h5</span>18 / 24 · 500</div><div class="text-h5">Adoption holds above 90 percent.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-body</span>16 / 26 · 400</div><div class="text-body">Quiet tools, kept useful week after week.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-small</span>14 / 22 · 400</div><div class="text-small">Weekly review, Tuesday morning.</div></div>
+          <div class="type-row"><div class="type-meta"><span class="tok">--text-micro</span>12 / 16 · 400 · 0.01em</div><div class="text-micro">TOKEN SET FINAL · CONFIRMED 2026-02-06</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-pad">
+          <h3 class="text-h4">Spacing</h3>
+          <div class="mt-3">
+            <div class="space-row"><span class="mono text-micro">--space-1</span><div class="space-bar" style="width:8px"></div><span class="mono text-micro">8</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-2</span><div class="space-bar" style="width:16px"></div><span class="mono text-micro">16</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-3</span><div class="space-bar" style="width:24px"></div><span class="mono text-micro">24</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-4</span><div class="space-bar" style="width:32px"></div><span class="mono text-micro">32</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-5</span><div class="space-bar" style="width:48px"></div><span class="mono text-micro">48</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-6</span><div class="space-bar" style="width:64px"></div><span class="mono text-micro">64</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-7</span><div class="space-bar" style="width:80px"></div><span class="mono text-micro">80</span></div>
+            <div class="space-row"><span class="mono text-micro">--space-8</span><div class="space-bar" style="width:120px"></div><span class="mono text-micro">120</span></div>
+          </div>
+        </div>
+        <div class="card card-pad mt-3">
+          <h3 class="text-h4">Radii, container, breakpoints</h3>
+          <div class="flex gap-3 mt-3">
+            <div><div class="radius-chip" style="border-radius:10px"></div><p class="text-micro ink-2 mt-1 mono">--radius-sm · 10</p></div>
+            <div><div class="radius-chip" style="border-radius:14px"></div><p class="text-micro ink-2 mt-1 mono">--radius-md · 14</p></div>
+            <div><div class="radius-chip" style="border-radius:18px"></div><p class="text-micro ink-2 mt-1 mono">--radius-lg · 18</p></div>
+          </div>
+          <p class="text-small ink-2 mt-3"><span class="mono">--container-max: 1200px</span> · <span class="mono">--grid-gutter: 24px</span></p>
+          <div class="table-scroll mt-3" style="box-shadow:none">
+            <table class="data-table" style="min-width:0">
+              <thead><tr><th>Breakpoint</th><th>Width</th><th>Cols</th><th>Gutter</th><th>Margin</th></tr></thead>
+              <tbody>
+                <tr><td>Mobile</td><td>&lt;640px</td><td>4</td><td>16px</td><td>20px</td></tr>
+                <tr><td>Tablet</td><td>640–1024px</td><td>8</td><td>24px</td><td>24px</td></tr>
+                <tr><td>Desktop</td><td>&gt;1024px</td><td>12</td><td>24px</td><td>Auto</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 1.2 COMPONENTS · LEVEL 0 ================= -->
+<section id="components" class="section">
+  <div class="container">
+    <p class="eyebrow"><span class="dot"></span> Part 1 · Specifications</p>
+    <h2 class="text-h2 mt-2">1.2 Component specifications</h2>
+
+    <h3 class="text-h4 mt-5">Buttons</h3>
+    <p class="text-small ink-2 mt-1">Shadow deepens on hover. Focus is always a 2px yellow outline. No motion beyond that.</p>
+    <div class="card card-pad mt-3">
+      <div class="flex gap-2 wrap">
+        <button class="btn-primary">Primary action</button>
+        <button class="btn-secondary">Secondary</button>
+        <button class="btn-tertiary">Tertiary / ghost</button>
+        <button class="btn-primary" disabled>Disabled</button>
+        <button class="btn-primary demo-focus">Focus state</button>
+        <button class="btn-primary">
+          <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New entry
+        </button>
+      </div>
+      <p class="text-micro ink-2 mt-3 mono">padding 10/14 · radius 14 · border rgba(mango, .35) · bg rgba(mango, .16 → .22 hover → .28 active)</p>
+    </div>
+
+    <div class="grid g-2 mt-5">
+      <div>
+        <h3 class="text-h4">Cards &amp; variants</h3>
+        <div class="grid g-3 mt-3" style="gap:16px">
+          <div class="card"><p class="text-small" style="font-weight:500">Default</p><p class="text-micro ink-2">surface-primary · 55%</p></div>
+          <div class="card card-soft"><p class="text-small" style="font-weight:500">Soft</p><p class="text-micro ink-2">surface-secondary · 45%</p></div>
+          <div class="card card-tint-green"><p class="text-small" style="font-weight:500">Tint green</p><p class="text-micro ink-2">structural</p></div>
+          <div class="card card-tint-yellow"><p class="text-small" style="font-weight:500">Tint yellow</p><p class="text-micro ink-2">insight</p></div>
+          <div class="card card-tint-orange"><p class="text-small" style="font-weight:500">Tint orange</p><p class="text-micro ink-2">action</p></div>
+          <div class="card" style="background:var(--grad-gy)"><p class="text-small" style="font-weight:500">grad-gy</p><p class="text-micro ink-2">transition surface</p></div>
+        </div>
+        <h3 class="text-h4 mt-5">Icon system · Phosphor</h3>
+        <div class="card card-pad mt-3">
+          <div class="flex gap-3 wrap">
+            <span class="icon-text"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="text-small">24 default</span></span>
+            <span class="icon-text"><svg class="icon" style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M7 15l3.5-4 3 2.5L18 8"/></svg><span class="text-small">20 small</span></span>
+            <span class="icon-text"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="text-small">16 micro</span></span>
+          </div>
+          <p class="text-micro ink-2 mt-3">Regular weight default, Bold for emphasis. Color: --ink at 90% opacity. Icon + text gap: 8px.</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-h4">Form inputs &amp; states</h3>
+        <div class="card card-pad mt-3">
+          <div class="field"><label for="i1">Default</label><input id="i1" class="input" type="text" placeholder="Team name"></div>
+          <div class="field mt-2"><label for="i2">Focused</label><input id="i2" class="input is-focus" type="text" value="Operations review"></div>
+          <div class="field mt-2"><label for="i3">Success</label><input id="i3" class="input input-success" type="text" value="45 minutes"></div>
+          <div class="field mt-2"><label for="i4">Error</label><input id="i4" class="input input-error" type="text" value="Missing owner"></div>
+          <div class="field mt-2"><label for="i5">Disabled</label><input id="i5" class="input" type="text" value="Locked after close" disabled></div>
+          <p class="text-micro ink-2 mt-3 mono">focus: border --mango-yellow + 0 0 0 3px rgba(216,199,119,.15) · success/error borders use vivid semantic lock</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 1.3 CHARTS · LEVEL 3 (insight) ================= -->
+<section id="charts" class="section bg-tint-yellow">
+  <div class="container">
+    <p class="eyebrow"><span class="dot y"></span> Part 1 · Specifications</p>
+    <h2 class="text-h2 mt-2">1.3 Chart.js theme</h2>
+    <p class="text-body ink-2 mt-2" style="max-width:680px">Roboto 14, ticks in --ink-2, dashed 4/4 grids at 6% ink, no border box, legends off in favor of direct labeling. Curves at tension 0.4 — smooth, never jagged.</p>
+
+    <div class="grid g-2 mt-5">
+      <div class="card card-pad">
+        <div class="flex" style="justify-content:space-between;align-items:baseline"><h3 class="text-h4">Line · positive trend</h3><span class="text-micro mono ink-2">borderWidth 2 · pointRadius 0</span></div>
+        <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Line chart, adoption rising toward target">
+          <line x1="40" y1="40"  x2="540" y2="40"  stroke="rgba(31,37,40,0.06)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="95"  x2="540" y2="95"  stroke="rgba(31,37,40,0.06)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="150" x2="540" y2="150" stroke="rgba(31,37,40,0.06)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="205" x2="540" y2="205" stroke="rgba(31,37,40,0.06)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="260" x2="540" y2="260" stroke="rgba(31,37,40,0.10)"/>
+          <text x="32" y="44" text-anchor="end">100</text><text x="32" y="99" text-anchor="end">75</text><text x="32" y="154" text-anchor="end">50</text><text x="32" y="209" text-anchor="end">25</text><text x="32" y="264" text-anchor="end">0</text>
+          <line x1="40" y1="73" x2="540" y2="73" stroke="#1f2528" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>
+          <text x="540" y="66" text-anchor="end" style="fill:#1f2528">Target 85</text>
+          <path d="M48,216 C75,216 89,203 116,203 C143,203 157,185 184,185 C211,185 225,161 252,161 C279,161 293,132 320,132 C347,132 361,106 388,106 C415,106 429,80 456,80 C483,80 497,60 524,60" fill="none" stroke="#6f8f6a" stroke-width="2"/>
+          <text x="524" y="48" text-anchor="end" style="fill:#6f8f6a;font-weight:500">Adoption</text>
+          <text x="48" y="282" text-anchor="middle">Jan</text><text x="184" y="282" text-anchor="middle">Mar</text><text x="320" y="282" text-anchor="middle">May</text><text x="456" y="282" text-anchor="middle">Jul</text><text x="524" y="282" text-anchor="middle">Aug</text>
+        </svg>
+      </div>
+      <div class="card card-pad">
+        <div class="flex" style="justify-content:space-between;align-items:baseline"><h3 class="text-h4">Bar · single-series emphasis</h3><span class="text-micro mono ink-2">radius 4 · bar% 0.6</span></div>
+        <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Bar chart with one emphasized bar">
+          <line x1="40" y1="260" x2="540" y2="260" stroke="rgba(31,37,40,0.10)"/>
+          <text x="32" y="64" text-anchor="end">80</text><text x="32" y="114" text-anchor="end">60</text><text x="32" y="164" text-anchor="end">40</text><text x="32" y="214" text-anchor="end">20</text><text x="32" y="264" text-anchor="end">0</text>
+          <rect x="48"  y="155" width="40" height="105" rx="4" fill="#6f8f6a"/>
+          <rect x="131" y="115" width="40" height="145" rx="4" fill="#6f8f6a"/>
+          <rect x="214" y="137" width="40" height="123" rx="4" fill="#6f8f6a"/>
+          <rect x="297" y="95"  width="40" height="165" rx="4" fill="#6f8f6a"/>
+          <rect x="380" y="77"  width="40" height="183" rx="4" fill="#d49a63"/>
+          <rect x="463" y="107" width="40" height="153" rx="4" fill="#6f8f6a"/>
+          <text x="68" y="147" text-anchor="middle">42</text><text x="151" y="107" text-anchor="middle">58</text><text x="234" y="129" text-anchor="middle">49</text><text x="317" y="87" text-anchor="middle">66</text><text x="400" y="69" text-anchor="middle" style="fill:#d49a63;font-weight:500">73</text><text x="483" y="99" text-anchor="middle">61</text>
+          <text x="68" y="282" text-anchor="middle">W1</text><text x="151" y="282" text-anchor="middle">W2</text><text x="234" y="282" text-anchor="middle">W3</text><text x="317" y="282" text-anchor="middle">W4</text><text x="400" y="282" text-anchor="middle">W5</text><text x="483" y="282" text-anchor="middle">W6</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="table-scroll mt-5">
+      <table class="data-table">
+        <thead><tr><th>Data type</th><th>Chart color</th><th>Background</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Positive trend</td><td><code>--mango-green</code></td><td>Transparent</td><td>Success without semantic lock</td></tr>
+          <tr><td>Negative trend</td><td><code>--mango-red</code></td><td>Transparent</td><td>Caution without semantic lock</td></tr>
+          <tr><td>Neutral / comparison</td><td><code>--ink-2</code></td><td>Transparent</td><td>Baseline reference</td></tr>
+          <tr><td>Multiple series</td><td>Primary → neutral palette</td><td>Transparent</td><td>Max 4 series</td></tr>
+          <tr><td>Single series emphasis</td><td><code>--mango-orange</code></td><td>Transparent</td><td>Highlight moment</td></tr>
+          <tr><td>Target / goal line</td><td><code>--ink</code></td><td>Transparent</td><td>1px dashed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g-2 mt-4">
+      <div class="code-head">charts/chartjs-theme.js</div>
+      <div></div>
+    </div>
+    <pre class="code">Chart.defaults.font.family = <span class="s">'"Roboto", system-ui, sans-serif'</span>;
+Chart.defaults.font.size = <span class="k">14</span>;  Chart.defaults.color = <span class="s">'#4b555c'</span>; <span class="c">// --ink-2</span>
+Chart.defaults.scale.grid.color = <span class="s">'rgba(31, 37, 40, 0.06)'</span>;
+Chart.defaults.scale.grid.borderDash = [<span class="k">4</span>, <span class="k">4</span>];  Chart.defaults.scale.grid.tickLength = <span class="k">0</span>;
+Chart.defaults.layout.padding = <span class="k">16</span>; <span class="c">// no box around chart</span>
+
+<span class="c">// line: borderWidth 2 · pointRadius 0 · pointHoverRadius 6 · tension 0.4 · legend off</span>
+<span class="c">// tooltip: bg rgba(31,37,40,.90) · padding 12 · cornerRadius 10 · title 12 / body 14</span>
+<span class="c">// bar:   borderRadius 4 · borderSkipped false · barPercentage .6 · categoryPercentage .8</span></pre>
+  </div>
+</section>
+
+<!-- ================= PART 2 · 2.1 PAGE TYPES · LEVEL 1 ================= -->
+<section id="recipes" class="section bg-base-2">
+  <div class="container">
+    <p class="eyebrow"><span class="dot o"></span> Part 2 · Recipes</p>
+    <h2 class="text-h2 mt-2">2.1 Page types &amp; surface hierarchy</h2>
+    <p class="text-body ink-2 mt-2" style="max-width:680px">Three recipes, three energies. Muted for trust, mixed for proof, ripe for the room. Gradients never sit adjacent — Level 0 or 1 always separates them.</p>
+
+    <div class="grid g-3 mt-5">
+      <!-- Landing -->
+      <article class="card card-pad">
+        <h3 class="text-h3">Landing</h3>
+        <p class="text-small ink-2 mt-1">Trust-building, sustained reading, conversion. <span class="mono">data-color-mode="muted"</span></p>
+        <div class="mt-3">
+          <div class="layer"><b>Hero</b><span class="tok">L0 · --base</span></div>
+          <div class="layer layer-l1"><b>Problem</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>Philosophy</b><span class="tok">L0 · --base</span></div>
+          <div class="layer layer-l3g"><b>Proof</b><span class="tok">L3 · --tint-green</span></div>
+          <div class="layer layer-l1"><b>Process</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>Context</b><span class="tok">L0 · --base</span></div>
+          <div class="layer layer-l3y"><b>Credibility</b><span class="tok">L3 · --tint-yellow</span></div>
+          <div class="layer"><b>CTA</b><span class="tok">L0 · --base</span></div>
+        </div>
+        <p class="text-micro ink-2 mt-3">Hero: large text, no image. Metrics stay ink-colored. Motion: hover shadow only, native smooth scroll.</p>
+      </article>
+      <!-- Case study -->
+      <article class="card card-pad">
+        <h3 class="text-h3">Case study</h3>
+        <p class="text-small ink-2 mt-1">Proof of work, energy moments. Mixed mode — ripe for numbers only.</p>
+        <div class="mt-3">
+          <div class="layer"><b>Hero</b><span class="tok">L0 · --base + artifact</span></div>
+          <div class="layer layer-l1"><b>Challenge</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>Approach</b><span class="tok">L0 · --base</span></div>
+          <div class="layer layer-l3g"><b>Process</b><span class="tok">L3 · --tint-green</span></div>
+          <div class="layer layer-l4"><b>Results</b><span class="tok">L4 · --grad-yo</span></div>
+          <div class="layer layer-l1"><b>Artifacts</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>CTA</b><span class="tok">L0 · --base</span></div>
+        </div>
+        <p class="text-micro ink-2 mt-3">Results band is the single gradient exception. Metric numbers may render in <span style="color:var(--mango-orange-vivid);font-weight:500">--mango-orange-vivid</span>; labels stay --ink-2.</p>
+      </article>
+      <!-- Presentation -->
+      <article class="card card-pad">
+        <h3 class="text-h3">Presentation</h3>
+        <p class="text-small ink-2 mt-1">Energy, attention, persuasive proof. <span class="mono">data-color-mode="ripe"</span></p>
+        <div class="mt-3">
+          <div class="layer layer-cover"><b>Cover</b><span class="tok">#FF9800 → #FFC107</span></div>
+          <div class="layer layer-l1"><b>Agenda</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>Problem</b><span class="tok">L0 · --base</span></div>
+          <div class="layer layer-l3g"><b>Approach</b><span class="tok">L3 · --tint-green</span></div>
+          <div class="layer layer-l4"><b>Results</b><span class="tok">L4 · grad / vivid</span></div>
+          <div class="layer layer-l1"><b>Details</b><span class="tok">L1 · --base-2</span></div>
+          <div class="layer"><b>CTA</b><span class="tok">L0 + vivid accent</span></div>
+        </div>
+        <div class="flex gap-1 wrap mt-3">
+          <span class="rbadge g">Adopted</span><span class="rbadge o">On pace</span><span class="rbadge y">In review</span><span class="rbadge r">Blocked</span>
+        </div>
+        <p class="text-micro ink-2 mt-3">Cover gradient and vivid badges are the ripe exceptions. Transitions 400ms ease, builds 200ms stagger, max 3, no auto-advance.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2.2 COMBOS · LEVEL 0 ================= -->
+<section id="combos" class="section">
+  <div class="container">
+    <p class="eyebrow"><span class="dot"></span> Part 2 · Recipes</p>
+    <h2 class="text-h2 mt-2">2.2 Component combinations</h2>
+
+    <div class="grid g-3 mt-5">
+      <article class="card">
+        <div class="metric">50% → 100%</div>
+        <div class="metric-label">Adoption rate</div>
+        <p class="text-small ink-2 mt-2">Muted metric card. The number stays --ink; proof without drama.</p>
+      </article>
+      <article class="card">
+        <div class="metric">4 hours → 45 min</div>
+        <div class="metric-label">Process time</div>
+        <p class="text-small ink-2 mt-2">Static numbers only. No animated counters, ever.</p>
+      </article>
+      <article class="card" data-color-mode="ripe">
+        <div class="metric metric-ripe">91%</div>
+        <div class="metric-label">Ripe variant · presentations only</div>
+        <p class="text-small ink-2 mt-2">Vivid orange is the single permitted exception for ripe emphasis.</p>
+      </article>
+    </div>
+
+    <div class="grid g-2 mt-5">
+      <div>
+        <h3 class="text-h4">Process steps</h3>
+        <p class="text-small ink-2 mt-1">Number badges follow the ripening order: green, yellow, orange, then neutral.</p>
+        <div class="grid mt-3" style="gap:12px">
+          <div class="step"><div class="step-num">1</div><div><h4 class="text-h4">Map the friction</h4><p class="text-body mt-1">Foundation. Observe the work where it actually happens.</p></div></div>
+          <div class="step"><div class="step-num n2">2</div><div><h4 class="text-h4">Find the signal</h4><p class="text-body mt-1">Insight. Separate the recurring cost from the noise.</p></div></div>
+          <div class="step"><div class="step-num n3">3</div><div><h4 class="text-h4">Change one system</h4><p class="text-body mt-1">Momentum. One mechanism, owned, measured weekly.</p></div></div>
+          <div class="step"><div class="step-num n4">4</div><div><h4 class="text-h4">Measure and sustain</h4><p class="text-body mt-1">Neutral continuation. The review outlives the project.</p></div></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-h4">Comparison table</h3>
+        <p class="text-small ink-2 mt-1">Tufte-aligned. Semantic vivid locks apply only to the outcome column.</p>
+        <div class="table-scroll mt-3">
+          <table class="data-table">
+            <thead><tr><th>Feature</th><th>Before</th><th>After</th></tr></thead>
+            <tbody>
+              <tr><td>Process time</td><td>4 hours</td><td class="positive">45 minutes</td></tr>
+              <tr><td>Adoption rate</td><td>50%</td><td class="positive">100%</td></tr>
+              <tr><td>Weekly escalations</td><td>9</td><td class="negative">14 (scope grew)</td></tr>
+              <tr><td>Review cadence</td><td>Ad hoc</td><td class="positive">Every Tuesday</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS BAND · LEVEL 4 (single gradient exception) ================= -->
+<section class="section" data-color-mode="ripe" style="background:var(--grad-yo); border-top:1px solid var(--line); border-bottom:1px solid var(--line)">
+  <div class="container">
+    <p class="eyebrow"><span class="dot o"></span> Recipe demo · Results band, mixed mode</p>
+    <h2 class="text-h2 mt-2">Results, stated plainly.</h2>
+    <div class="grid g-3 mt-5">
+      <div>
+        <div class="metric-display">45 min</div>
+        <div class="metric-label">Process time, was 4 hours</div>
+        <svg viewBox="0 0 120 36" width="120" height="36" class="mt-2" aria-hidden="true"><rect x="0" y="20" width="12" height="16" rx="3" fill="#6f8f6a"/><rect x="18" y="14" width="12" height="22" rx="3" fill="#6f8f6a"/><rect x="36" y="9" width="12" height="27" rx="3" fill="#6f8f6a"/><rect x="54" y="4" width="12" height="32" rx="3" fill="#d49a63"/></svg>
+      </div>
+      <div>
+        <div class="metric-display">100%</div>
+        <div class="metric-label">Team adoption, week 6</div>
+        <svg viewBox="0 0 120 36" width="120" height="36" class="mt-2" aria-hidden="true"><rect x="0" y="26" width="12" height="10" rx="3" fill="#6f8f6a"/><rect x="18" y="18" width="12" height="18" rx="3" fill="#6f8f6a"/><rect x="36" y="10" width="12" height="26" rx="3" fill="#6f8f6a"/><rect x="54" y="2" width="12" height="34" rx="3" fill="#d49a63"/></svg>
+      </div>
+      <div>
+        <div class="metric-display">3×</div>
+        <div class="metric-label">Review cadence held</div>
+        <svg viewBox="0 0 120 36" width="120" height="36" class="mt-2" aria-hidden="true"><rect x="0" y="24" width="12" height="12" rx="3" fill="#6f8f6a"/><rect x="18" y="24" width="12" height="12" rx="3" fill="#6f8f6a"/><rect x="36" y="12" width="12" height="24" rx="3" fill="#6f8f6a"/><rect x="54" y="6" width="12" height="30" rx="3" fill="#d49a63"/></svg>
+      </div>
+    </div>
+    <p class="text-small ink-2 mt-4">Numbers in --mango-orange-vivid on --grad-yo. Small multiples in muted green prove the trend. This band sits between Level 0 sections, so the gradient rule holds.</p>
+  </div>
+</section>
+
+<!-- ================= 2.3 IMAGES · LEVEL 1 ================= -->
+<section class="section bg-base-2">
+  <div class="container">
+    <p class="eyebrow"><span class="dot y"></span> Part 2 · Recipes</p>
+    <h2 class="text-h2 mt-2">2.3 Image generation recipes</h2>
+    <div class="grid g-3 mt-5">
+      <article class="card card-pad">
+        <svg class="thumb" viewBox="0 0 320 180" role="img" aria-label="Artifact-led preview: annotated kanban board">
+          <rect width="320" height="180" fill="#f5f2eb"/>
+          <rect x="30" y="24" width="260" height="120" rx="6" fill="#fbfaf7" stroke="rgba(31,37,40,.10)"/>
+          <line x1="117" y1="24" x2="117" y2="144" stroke="rgba(31,37,40,.10)"/><line x1="204" y1="24" x2="204" y2="144" stroke="rgba(31,37,40,.10)"/>
+          <rect x="42" y="38" width="60" height="34" rx="3" fill="#d8c777" opacity=".8"/><rect x="42" y="80" width="60" height="26" rx="3" fill="#d8c777" opacity=".55"/>
+          <rect x="129" y="38" width="60" height="26" rx="3" fill="#6f8f6a" opacity=".6"/><rect x="129" y="72" width="60" height="40" rx="3" fill="#d8c777" opacity=".7"/>
+          <rect x="216" y="38" width="60" height="30" rx="3" fill="#d49a63" opacity=".65"/>
+          <path d="M46 120c20-6 34 4 52-4" stroke="#4b555c" fill="none" stroke-width="1.4" opacity=".7"/>
+          <circle cx="286" cy="152" r="14" fill="#fbfaf7" stroke="rgba(31,37,40,.15)"/>
+        </svg>
+        <h3 class="text-h4 mt-3">Artifact-led</h3>
+        <p class="text-small ink-2 mt-1">Case study covers, proof sections, portfolio. 45° overhead, f/2.8, background #f5f2eb, −15% saturation, paper wear visible, no people.</p>
+        <pre class="code mt-2" style="white-space:pre-wrap">"Documentary photograph of printed kanban board with sticky notes on light oak table, natural soft window light upper left, 45-degree overhead, shallow DoF f/2.8, background #f5f2eb, desaturated -15%, handwritten annotations in blue ink, coffee cup partially visible, no people, 4:3"</pre>
+      </article>
+      <article class="card card-pad">
+        <svg class="thumb" viewBox="0 0 320 180" role="img" aria-label="Environmental preview: quiet office scene">
+          <rect width="320" height="180" fill="#fbfaf7"/>
+          <rect x="24" y="22" width="120" height="70" rx="4" fill="#f5f2eb" stroke="rgba(31,37,40,.10)"/>
+          <path d="M36 44h60M36 58h84M36 72h48" stroke="#9aa0a5" stroke-width="2" opacity=".6"/>
+          <rect x="180" y="96" width="120" height="10" rx="3" fill="#d49a63" opacity=".5"/>
+          <rect x="196" y="60" width="34" height="36" rx="3" fill="#4b555c" opacity=".35"/>
+          <rect x="240" y="70" width="24" height="26" rx="3" fill="#6f8f6a" opacity=".45"/>
+          <rect x="0" y="120" width="320" height="60" fill="#f5f2eb"/>
+        </svg>
+        <h3 class="text-h4 mt-3">Environmental</h3>
+        <p class="text-small ink-2 mt-1">Process sections, team culture. Available light, candid, environment tells the story. No stock huddles, no eye contact, 35mm perspective.</p>
+        <pre class="code mt-2" style="white-space:pre-wrap">"Documentary photography, person reviewing documents at standing desk, available natural light, candid, whiteboard with diagrams slightly out of focus, palette #fbfaf7 #f5f2eb, no smiling at camera, analog film aesthetic, 35mm"</pre>
+      </article>
+      <article class="card card-pad">
+        <svg class="thumb" viewBox="0 0 320 180" role="img" aria-label="Abstract texture preview">
+          <defs><linearGradient id="ab" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4b555c" stop-opacity=".28"/><stop offset="1" stop-color="#d49a63" stop-opacity=".22"/></linearGradient></defs>
+          <rect width="320" height="180" fill="url(#ab)"/>
+          <path d="M0 40q80 18 160 6t160 10M0 90q80 14 160 4t160 12M0 140q80 16 160 6t160 8" stroke="#fbfaf7" stroke-width="10" fill="none" opacity=".35"/>
+        </svg>
+        <h3 class="text-h4 mt-3">Abstract / textural</h3>
+        <p class="text-small ink-2 mt-1">Backgrounds, dividers, hero support. Paper, linen, stone, dried grass. −30% saturation, duotone warm gray, blur 20px when used behind text.</p>
+        <pre class="code mt-2" style="white-space:pre-wrap">"Abstract macro photography, weathered paper texture with subtle grain, soft directional light, monochrome warm gray #4b555c tones, extreme close-up, tactile surface, fine art style, 1:1"</pre>
+      </article>
+    </div>
+    <div class="grid g-2 mt-4">
+      <div>
+        <div class="code-head">Negative prompt · all categories</div>
+        <pre class="code" style="white-space:pre-wrap">stock photo, posed, pristine condition, studio lighting, overhead fluorescent, people, hands, smiling, corporate gloss, oversaturated, HDR effect, white background</pre>
+      </div>
+      <div>
+        <div class="code-head">Post-processing</div>
+        <pre class="code">crop 4:3 or 16:9
+desaturate -10%
+lift blacks slightly
+add subtle grain</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2.4 ERROR PREVENTION · LEVEL 3 (action) ================= -->
+<section id="errors" class="section bg-tint-orange">
+  <div class="container">
+    <p class="eyebrow"><span class="dot r"></span> Part 2 · Recipes</p>
+    <h2 class="text-h2 mt-2">2.4 Error prevention</h2>
+    <div class="grid g-2 mt-5" style="align-items:start">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Violation</th><th>Detection</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Vivid color for body text</td><td>Contrast &lt; 4.5:1</td><td>Muted equivalent or larger size</td></tr>
+            <tr><td>Adjacent gradient sections</td><td>Two --grad-* in viewport</td><td>Separate with Level 0 or 1</td></tr>
+            <tr><td>Red icon on white</td><td>--mango-red-vivid in icons</td><td>Use --ink or --ink-2</td></tr>
+            <tr><td>Animated counter</td><td>transition on number change</td><td>Static number or bar fill</td></tr>
+            <tr><td>Exclamation point in headline</td><td>Content scan</td><td>Period or nothing</td></tr>
+            <tr><td>"Revolutionary" in copy</td><td>Keyword scan</td><td>Specific capability</td></tr>
+            <tr><td>Pure white background</td><td>background: #fff</td><td>Use --base</td></tr>
+            <tr><td>Missing focus indicator</td><td>:focus style check</td><td>2px --mango-yellow outline</td></tr>
+            <tr><td>Auto-playing carousel</td><td>setInterval detection</td><td>Manual only</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card card-pad">
+        <h3 class="text-h4">Checklist · new component</h3>
+        <p class="text-small ink-2 mt-1">Before anything enters the system, all nine hold.</p>
+        <div class="mt-3">
+          <label class="check"><input type="checkbox">Uses only canonical tokens (no hex values)</label>
+          <label class="check"><input type="checkbox">Respects color mode inheritance</label>
+          <label class="check"><input type="checkbox">Semantic colors only for success / warning / error</label>
+          <label class="check"><input type="checkbox">Motion respects reduced-motion preference</label>
+          <label class="check"><input type="checkbox">Focus state visible and yellow</label>
+          <label class="check"><input type="checkbox">Disabled state meets contrast (4.5:1 minimum)</label>
+          <label class="check"><input type="checkbox">Tested in both muted and ripe modes</label>
+          <label class="check"><input type="checkbox">No exclamation points in labels</label>
+          <label class="check"><input type="checkbox">No "will transform" or future-casting language</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PART 3 · LEVEL 0 ================= -->
+<section id="implementation" class="section">
+  <div class="container">
+    <p class="eyebrow"><span class="dot"></span> Part 3 · Implementation guide</p>
+    <h2 class="text-h2 mt-2">3.1–3.3 Ship it in an afternoon</h2>
+    <div class="grid g-2 mt-5" style="align-items:start">
+      <div>
+        <div class="code-head">design-system/ · file structure</div>
+        <pre class="code">design-system/
+├── tokens/
+│   ├── colors.css
+│   ├── typography.css
+│   ├── spacing.css
+│   └── layout.css
+├── components/
+│   ├── buttons.css
+│   ├── cards.css
+│   ├── forms.css
+│   └── icons.js <span class="c">(Phosphor imports)</span>
+├── recipes/
+│   ├── landing-page.css
+│   ├── case-study.css
+│   └── presentation.css
+├── charts/
+│   └── chartjs-theme.js
+└── assets/
+    └── image-prompts.md</pre>
+        <div class="code-head mt-4">Mode switching · React context</div>
+        <pre class="code">const ColorModeContext = createContext(<span class="s">'muted'</span>);
+
+function ColorModeProvider({ children, mode = <span class="s">'muted'</span> }) {
+  return (
+    &lt;ColorModeContext.Provider value={mode}&gt;
+      &lt;div data-color-mode={mode}&gt;{children}&lt;/div&gt;
+    &lt;/ColorModeContext.Provider&gt;
+  );
+}
+
+<span class="c">// Usage</span>
+&lt;ColorModeProvider mode=<span class="s">"muted"</span>&gt;
+  &lt;LandingPage /&gt;
+  &lt;ColorModeProvider mode=<span class="s">"ripe"</span>&gt;
+    &lt;ResultsSection /&gt;
+  &lt;/ColorModeProvider&gt;
+&lt;/ColorModeProvider&gt;</pre>
+      </div>
+      <div>
+        <div class="grid" style="gap:12px">
+          <div class="step"><div class="step-num">1</div><div style="flex:1"><h4 class="text-h4">Install Phosphor Icons</h4><pre class="code mt-2">npm install @phosphor-icons/react</pre></div></div>
+          <div class="step"><div class="step-num n2">2</div><div style="flex:1"><h4 class="text-h4">Import tokens</h4><pre class="code mt-2">@import 'design-system/tokens/colors.css';
+@import 'design-system/tokens/typography.css';
+@import 'design-system/tokens/spacing.css';
+@import 'design-system/tokens/layout.css';</pre></div></div>
+          <div class="step"><div class="step-num n3">3</div><div style="flex:1"><h4 class="text-h4">Import components</h4><pre class="code mt-2">@import 'design-system/components/buttons.css';
+@import 'design-system/components/cards.css';</pre></div></div>
+          <div class="step"><div class="step-num n4">4</div><div style="flex:1"><h4 class="text-h4">Configure Chart.js</h4><pre class="code mt-2">import { mangoChartDefaults } from './charts/chartjs-theme.js';
+Chart.defaults = { ...Chart.defaults, ...mangoChartDefaults };</pre></div></div>
+          <div class="step"><div class="step-num n4">5</div><div style="flex:1"><h4 class="text-h4">Set color mode</h4><pre class="code mt-2">&lt;html data-color-mode="muted"&gt;
+  &lt;section data-color-mode="ripe"&gt;
+    <span class="c">&lt;!-- ripe exception, scoped --&gt;</span>
+  &lt;/section&gt;
+&lt;/html&gt;</pre></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= APPENDIX · LEVEL 1 ================= -->
+<section id="appendix" class="section bg-base-2">
+  <div class="container">
+    <p class="eyebrow"><span class="dot"></span> Appendix A · Token quick reference</p>
+    <h2 class="text-h2 mt-2">CSS custom properties, verbatim</h2>
+    <div class="grid g-2 mt-5" style="align-items:start">
+      <pre class="code">:root {
+  <span class="c">/* Colors */</span>
+  --base: <span class="s">#fbfaf7</span>;            --base-2: <span class="s">#f5f2eb</span>;
+  --ink: <span class="s">#1f2528</span>;             --ink-2: <span class="s">#4b555c</span>;
+  --line: <span class="s">rgba(31, 37, 40, 0.10)</span>;
+
+  <span class="c">/* Muted mango */</span>
+  --mango-green: <span class="s">#6f8f6a</span>;  --mango-yellow: <span class="s">#d8c777</span>;
+  --mango-orange: <span class="s">#d49a63</span>; --mango-red: <span class="s">#b87463</span>;
+
+  <span class="c">/* Ripe mango (restricted) */</span>
+  --mango-green-vivid: <span class="s">#2E7D32</span>;  --mango-yellow-vivid: <span class="s">#FBC02D</span>;
+  --mango-orange-vivid: <span class="s">#F57C00</span>; --mango-red-vivid: <span class="s">#C62828</span>;
+
+  <span class="c">/* Surfaces */</span>
+  --surface-primary: <span class="s">rgba(255, 255, 255, 0.55)</span>;
+  --surface-secondary: <span class="s">rgba(255, 255, 255, 0.45)</span>;
+  --tint-green: <span class="s">rgba(111, 143, 106, 0.10)</span>;
+  --tint-yellow: <span class="s">rgba(216, 199, 119, 0.12)</span>;
+  --tint-orange: <span class="s">rgba(212, 154, 99, 0.10)</span>;
+  --grad-gy: <span class="s">linear-gradient(135deg, rgba(111,143,106,.14), rgba(216,199,119,.12))</span>;
+  --grad-yo: <span class="s">linear-gradient(135deg, rgba(216,199,119,.14), rgba(212,154,99,.12))</span>;
+
+  --shadow-1: <span class="s">0 10px 24px rgba(31, 37, 40, 0.06)</span>;
+  --shadow-2: <span class="s">0 16px 38px rgba(31, 37, 40, 0.10)</span>;</pre>
+      <pre class="code"><span class="c">/* Typography */</span>
+--font: <span class="s">"Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif</span>;
+--text-display: 48px; --text-h1: 42px; --text-h2: 34px;
+--text-h3: 27px; --text-h4: 22px; --text-h5: 18px;
+--text-body: 16px; --text-small: 14px; --text-micro: 12px;
+
+<span class="c">/* Spacing */</span>
+--space-1: 8px;  --space-2: 16px; --space-3: 24px; --space-4: 32px;
+--space-5: 48px; --space-6: 64px; --space-7: 80px; --space-8: 120px;
+
+<span class="c">/* Layout */</span>
+--container-max: 1200px;
+--radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px;
+
+<span class="c">/* Chart.js palette */</span>
+export const mangoChartConfig = {
+  defaults: { font: { family: <span class="s">'"Roboto", system-ui, sans-serif'</span>, size: <span class="k">14</span> }, color: <span class="s">'#4b555c'</span> },
+  colors: {
+    primary: <span class="s">'#6f8f6a'</span>, secondary: <span class="s">'#d8c777'</span>, tertiary: <span class="s">'#d49a63'</span>,
+    neutral: <span class="s">'#4b555c'</span>, success: <span class="s">'#2E7D32'</span>, warning: <span class="s">'#FBC02D'</span>, error: <span class="s">'#C62828'</span>
+  }
+};</pre>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer bg-base-2">
+  <div class="container flex" style="justify-content:space-between; padding-top:32px; padding-bottom:32px; gap:16px; flex-wrap:wrap">
+    <span class="icon-text">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="7" fill="#d49a63"/><path d="M12 7c.5-3 2.5-4.6 5.6-5.1-.5 3.1-2.5 4.7-5.6 5.1z" fill="#6f8f6a"/></svg>
+      <span class="text-small ink-2">Mango Management Visual System</span>
+    </span>
+    <span class="text-small ink-2">Document status: Final v1.0 — all confirmations integrated, ready for implementation.</span>
+    <span class="text-micro mono ink-2">Confirmed 2026-02-06</span>
+  </div>
+</footer>
+
+</body>
+</html>
