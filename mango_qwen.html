@@ -25,6 +25,7 @@
 }
 /* ============ BASE ============ */
 *{box-sizing:border-box; margin:0}
+html, body { overflow-x: hidden; max-width: 100vw; }
 html{scroll-behavior:smooth}
 body{background:var(--base); color:var(--ink); font-family:var(--font); font-size:16px; line-height:26px; -webkit-font-smoothing:antialiased}
 @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *,*::before,*::after{transition:none!important; animation:none!important} }
@@ -57,7 +58,34 @@ a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visibl
 .mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}.mt-5{margin-top:48px}.mt-6{margin-top:64px}
 .flex{display:flex; align-items:center} .wrap{flex-wrap:wrap} .gap-1{gap:8px}.gap-2{gap:16px}.gap-3{gap:24px}
 @media (max-width:1024px){ .g-4,.g-5{grid-template-columns:repeat(2,1fr)} .g-3{grid-template-columns:repeat(2,1fr)} }
-@media (max-width:640px){ .g-2,.g-3,.g-4,.g-5{grid-template-columns:1fr} .text-display{font-size:34px;line-height:40px} .text-h2{font-size:27px;line-height:32px} .container,.container-narrow{padding:0 20px} }
+@media (max-width:640px){ 
+  .g-2,.g-3,.g-4,.g-5{grid-template-columns:1fr} 
+  .text-display{font-size:34px;line-height:40px} 
+  .text-h2{font-size:27px;line-height:32px} 
+  .container,.container-narrow{padding:0 20px} 
+  
+  /* Mobile Topbar Fix */
+  .topbar-inner { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; row-gap: 8px; }
+  .topbar .badge { display: none; }
+  
+  /* Mobile Spacing Rows Fix */
+  .space-row { 
+    grid-template-columns: 1fr auto; 
+    grid-template-rows: auto auto; 
+    gap: 0 16px; 
+    padding: 12px 0; 
+    border-bottom: 1px solid var(--line);
+  }
+  .space-row > span:first-child { grid-column: 1; grid-row: 1; }
+  .space-row > span:last-child { grid-column: 2; grid-row: 1; }
+  .space-bar { 
+    grid-column: 1 / -1; 
+    grid-row: 2; 
+    width: 100% !important; 
+    height: 8px; 
+    margin-top: 8px; 
+  }
+}
 /* ============ TOPBAR ============ */
 .topbar{position:sticky; top:0; z-index:50; background:rgba(251,250,247,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
 .topbar-inner{display:flex; align-items:center; gap:12px; height:64px}
@@ -302,14 +330,14 @@ svg text{font-family:var(--font); fill:#4b555c; font-size:12px}
         </div>
         <div class="card card-pad mt-3">
           <h3 class="text-h4">Radii, container, breakpoints</h3>
-          <div class="flex gap-3 mt-3">
+          <div class="flex gap-3 wrap mt-3">
             <div><div class="radius-chip" style="border-radius:10px"></div><p class="text-micro ink-2 mt-1 mono">--radius-sm · 10</p></div>
             <div><div class="radius-chip" style="border-radius:14px"></div><p class="text-micro ink-2 mt-1 mono">--radius-md · 14</p></div>
             <div><div class="radius-chip" style="border-radius:18px"></div><p class="text-micro ink-2 mt-1 mono">--radius-lg · 18</p></div>
           </div>
           <p class="text-small ink-2 mt-3"><span class="mono">--container-max: 1200px</span> · <span class="mono">--grid-gutter: 24px</span></p>
           <div class="table-scroll mt-3" style="box-shadow:none">
-            <table class="data-table" style="min-width:0">
+            <table class="data-table">
               <thead><tr><th>Breakpoint</th><th>Width</th><th>Cols</th><th>Gutter</th><th>Margin</th></tr></thead>
               <tbody>
                 <tr><td>Mobile</td><td>&lt;640px</td><td>4</td><td>16px</td><td>20px</td></tr>
