@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="en" data-color-mode="muted">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mango Visual System — Spec + Recipes v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+:root {
+  /* Foundation */
+  --base: #fbfaf7;
+  --base-2: #f5f2eb;
+  --ink: #1f2528;
+  --ink-2: #4b555c;
+  --line: rgba(31, 37, 40, 0.10);
+
+  /* Muted mango (default) */
+  --mango-green: #6f8f6a;
+  --mango-yellow: #d8c777;
+  --mango-orange: #d49a63;
+  --mango-red: #b87463;
+
+  /* Ripe mango (locked — never change) */
+  --mango-green-vivid: #2E7D32;
+  --mango-yellow-vivid: #FBC02D;
+  --mango-orange-vivid: #F57C00;
+  --mango-red-vivid: #C62828;
+
+  /* Surfaces */
+  --surface-primary: rgba(255, 255, 255, 0.55);
+  --surface-secondary: rgba(255, 255, 255, 0.45);
+  --tint-green: rgba(111, 143, 106, 0.10);
+  --tint-yellow: rgba(216, 199, 119, 0.12);
+  --tint-orange: rgba(212, 154, 99, 0.10);
+  --grad-gy: linear-gradient(135deg, rgba(111, 143, 106, 0.14), rgba(216, 199, 119, 0.12));
+  --grad-yo: linear-gradient(135deg, rgba(216, 199, 119, 0.14), rgba(212, 154, 99, 0.12));
+
+  /* Shadows */
+  --shadow-1: 0 10px 24px rgba(31, 37, 40, 0.06);
+  --shadow-2: 0 16px 38px rgba(31, 37, 40, 0.10);
+
+  /* Typography */
+  --font: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  --text-display: 48px;
+  --text-h1: 42px;
+  --text-h2: 34px;
+  --text-h3: 27px;
+  --text-h4: 22px;
+  --text-h5: 18px;
+  --text-body: 16px;
+  --text-small: 14px;
+  --text-micro: 12px;
+
+  /* Spacing */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+  --space-7: 80px;
+  --space-8: 120px;
+
+  /* Layout */
+  --container-max: 1200px;
+  --grid-gutter: 24px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --sidebar-width: 240px;
+
+  /* Scroll progress (updated by JS) */
+  --scroll-progress: 0;
+}
+
+/* ─── SECTION-LEVEL RIPE MODE ─── */
+[data-color-mode="ripe"] {
+  --mango-green: var(--mango-green-vivid);
+  --mango-yellow: var(--mango-yellow-vivid);
+  --mango-orange: var(--mango-orange-vivid);
+  --mango-red: var(--mango-red-vivid);
+  --tint-green: rgba(46, 125, 50, 0.12);
+  --tint-yellow: rgba(251, 192, 45, 0.14);
+  --tint-orange: rgba(245, 124, 0, 0.12);
+  --grad-gy: linear-gradient(135deg, rgba(46, 125, 50, 0.18), rgba(251, 192, 45, 0.14));
+  --grad-yo: linear-gradient(135deg, rgba(251, 192, 45, 0.18), rgba(245, 124, 0, 0.14));
+}
+
+/* ─── RESET ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--text-body);
+  line-height: 1.625;
+  color: var(--ink);
+  background: var(--base);
+  min-height: 100vh;
+}
+
+/* ─── SCROLL PROGRESS ─── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: 2px;
+  background: var(--mango-green);
+  transform-origin: left;
+  transform: scaleX(var(--scroll-progress));
+  z-index: 200;
+  transition: background 300ms ease;
+}
+
+[data-color-mode="ripe"] .scroll-progress {
+  background: var(--mango-orange-vivid);
+}
+
+/* ─── LAYOUT ─── */
+.app-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--base-2);
+  border-right: 1px solid var(--line);
+  padding: var(--space-3);
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-3);
+  flex-shrink: 0;
+}
+
+.sidebar-brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--grad-gy);
+  display: grid;
+  place-items: center;
+  color: var(--mango-green);
+  font-size: 16px;
+}
+
+.sidebar-brand-text {
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.sidebar-brand-text span {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav { list-style: none; }
+
+.sidebar-nav li { margin-bottom: 2px; }
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.sidebar-nav a:hover {
+  background: var(--surface-primary);
+  color: var(--ink);
+}
+
+.sidebar-nav a.active {
+  background: var(--tint-green);
+  color: var(--mango-green);
+  font-weight: 500;
+}
+
+.sidebar-nav a i { font-size: 16px; opacity: 0.7; }
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-1);
+  padding-left: 10px;
+}
+
+.sidebar-nav-secondary {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+/* Mode toggle */
+.mode-toggle {
+  margin-top: var(--space-3);
+  flex-shrink: 0;
+}
+
+.mode-toggle-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-bottom: var(--space-1);
+}
+
+.mode-toggle-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: var(--font);
+}
+
+.mode-btn.active {
+  background: var(--mango-green);
+  color: var(--base);
+  border-color: var(--mango-green);
+}
+
+.mode-btn:hover:not(.active) {
+  background: var(--surface-primary);
+  color: var(--ink);
+}
+
+.mode-toggle-hint {
+  font-size: 10px;
+  color: var(--ink-2);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.sidebar-version {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--ink-2);
+  letter-spacing: 0.03em;
+}
+
+.sidebar-version strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+/* ─── MAIN ─── */
+.main {
+  grid-column: 2;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+}
+
+.container-narrow {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.text-display {
+  font-size: var(--text-display);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.text-h1 {
+  font-size: var(--text-h1);
+  line-height: 1.14;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.text-h2 {
+  font-size: var(--text-h2);
+  line-height: 1.18;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.text-h3 {
+  font-size: var(--text-h3);
+  line-height: 1.19;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.text-h4 {
+  font-size: var(--text-h4);
+  line-height: 1.27;
+  font-weight: 500;
+}
+
+.text-h5 {
+  font-size: var(--text-h5);
+  line-height: 1.33;
+  font-weight: 500;
+}
+
+.text-body { font-size: var(--text-body); line-height: 1.625; }
+.text-small { font-size: var(--text-small); line-height: 1.57; }
+.text-micro { font-size: var(--text-micro); line-height: 1.33; letter-spacing: 0.01em; }
+.text-mono { font-family: var(--font-mono); }
+
+/* ─── BUTTONS ─── */
+.btn-primary, .btn-secondary, .btn-tertiary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn-primary {
+  border-color: rgba(111, 143, 106, 0.35);
+  background: rgba(111, 143, 106, 0.16);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-2);
+  background: rgba(111, 143, 106, 0.22);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--mango-yellow);
+  outline-offset: 2px;
+}
+
+.btn-primary:active { background: rgba(111, 143, 106, 0.28); }
+
+.btn-primary:disabled {
+  background: var(--base-2);
+  color: var(--ink-2);
+  border-color: var(--line);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  border-color: rgba(216, 199, 119, 0.35);
+  background: rgba(216, 199, 119, 0.16);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+
+.btn-secondary:hover {
+  background: rgba(216, 199, 119, 0.22);
+  box-shadow: var(--shadow-2);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--mango-yellow);
+  outline-offset: 2px;
+}
+
+.btn-tertiary {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-tertiary:hover {
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-1);
+}
+
+.btn-tertiary:focus-visible {
+  outline: 2px solid var(--mango-yellow);
+  outline-offset: 2px;
+}
+
+/* Ripe mode button overrides */
+[data-color-mode="ripe"] .btn-primary {
+  border-color: rgba(46, 125, 50, 0.40);
+  background: rgba(46, 125, 50, 0.20);
+}
+
+[data-color-mode="ripe"] .btn-primary:hover {
+  background: rgba(46, 125, 50, 0.28);
+}
+
+[data-color-mode="ripe"] .btn-secondary {
+  border-color: rgba(251, 192, 45, 0.40);
+  background: rgba(251, 192, 45, 0.18);
+}
+
+[data-color-mode="ripe"] .btn-secondary:hover {
+  background: rgba(251, 192, 45, 0.26);
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-1);
+  transition: box-shadow 220ms ease;
+}
+
+.card:hover { box-shadow: var(--shadow-2); }
+
+.card-soft { background: var(--surface-secondary); }
+.card-tint-green { background: var(--tint-green); }
+.card-tint-yellow { background: var(--tint-yellow); }
+.card-tint-orange { background: var(--tint-orange); }
+
+/* ─── INPUTS ─── */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-primary);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input:hover { border-color: rgba(31, 37, 40, 0.20); }
+
+.input:focus {
+  outline: none;
+  border-color: var(--mango-yellow);
+  box-shadow: 0 0 0 3px rgba(216, 199, 119, 0.15);
+}
+
+.input:disabled {
+  background: var(--base-2);
+  color: var(--ink-2);
+  cursor: not-allowed;
+}
+
+.input-success { border-color: var(--mango-green-vivid); }
+.input-error { border-color: var(--mango-red-vivid); }
+
+/* ─── SECTIONS ─── */
+.section {
+  padding: var(--space-7) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mango-green);
+  background: var(--tint-green);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.section-label i { font-size: 14px; }
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mode-badge-muted {
+  background: var(--tint-green);
+  color: var(--mango-green);
+}
+
+.mode-badge-ripe {
+  background: var(--mango-green-vivid);
+  color: white;
+}
+
+.mode-badge-mixed {
+  background: var(--tint-yellow);
+  color: var(--mango-orange);
+}
+
+/* ─── HERO ─── */
+.hero {
+  padding: var(--space-8) 0 var(--space-7);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-gradient {
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--tint-green) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--tint-yellow);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+}
+
+.hero h1 { margin-bottom: var(--space-2); }
+
+.hero-sub {
+  font-size: var(--text-h5);
+  color: var(--ink-2);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.hero-meta {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.hero-meta-item {
+  font-size: var(--text-micro);
+  color: var(--ink-2);
+}
+
+.hero-meta-item strong {
+  display: block;
+  font-size: var(--text-small);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ─── COLOR SWATCHES ─── */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2);
+}
+
+.swatch {
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-primary);
+  cursor: pointer;
+  transition: box-shadow 200ms ease;
+  position: relative;
+}
+
+.swatch:hover { box-shadow: var(--shadow-1); }
+
+.swatch-color {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-1);
+  border: 1px solid var(--line);
+}
+
+.swatch-label {
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: var(--ink);
+  font-family: var(--font-mono);
+}
+
+.swatch-value {
+  font-size: 11px;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+}
+
+.swatch-copy {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--surface-primary);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.swatch:hover .swatch-copy { opacity: 1; }
+
+.swatch-copy:hover { background: var(--base-2); }
+
+/* ─── TYPE SPECIMEN ─── */
+.type-specimen {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.type-specimen:last-child { border-bottom: none; }
+
+.type-token {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--mango-green);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.type-sample {
+  color: var(--ink);
+}
+
+.type-meta {
+  font-size: var(--text-micro);
+  color: var(--ink-2);
+  margin-left: auto;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
+/* ─── CODE BLOCKS ─── */
+.code-block {
+  background: var(--ink);
+  color: #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  position: relative;
+  margin: var(--space-2) 0;
+}
+
+.code-block::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-2);
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.code-block .kw { color: #c792ea; }
+.code-block .str { color: #c3e88d; }
+.code-block .prop { color: #82aaff; }
+.code-block .val { color: #f78c6c; }
+.code-block .comment { color: #546e7a; font-style: italic; }
+.code-block .sel { color: #ffcb6b; }
+.code-block .tag { color: #f07178; }
+.code-block .attr { color: #ffcb6b; }
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-2);
+  background: var(--base-2);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-size: var(--text-micro);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+}
+
+.code-header + .code-block {
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  margin-top: 0;
+}
+
+.code-copy {
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.code-copy:hover { color: var(--ink); }
+
+/* ─── DATA TABLE ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+  margin: var(--space-2) 0;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--base-2);
+  font-weight: 500;
+  color: var(--ink);
+  font-size: var(--text-micro);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.data-table tr:hover td { background: rgba(255,255,255,0.3); }
+
+.data-table .positive { color: var(--mango-green-vivid); font-weight: 500; }
+.data-table .negative { color: var(--mango-red-vivid); font-weight: 500; }
+
+/* ─── METRIC CARD ─── */
+.metric-card {
+  background: var(--surface-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-1);
+}
+
+.metric-card .metric {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.metric-card .metric-label {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-top: 4px;
+}
+
+.metric-card-ripe .metric { color: var(--mango-orange-vivid); }
+
+/* ─── PROCESS STEP ─── */
+.step {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-1);
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--base);
+  background: var(--mango-green);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.step-num.step-yellow { background: var(--mango-yellow); color: var(--ink); }
+.step-num.step-orange { background: var(--mango-orange); }
+.step-num.step-neutral { background: var(--ink-2); }
+
+/* ─── SURFACE PREVIEW ─── */
+.surface-preview {
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-small);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.surface-level-0 { background: var(--base); }
+.surface-level-1 { background: var(--base-2); }
+.surface-level-3 { background: var(--tint-green); }
+.surface-level-4 { background: var(--grad-yo); }
+
+/* ─── GRIDS ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+
+/* ─── CHART CONTAINER ─── */
+.chart-container {
+  position: relative;
+  height: 280px;
+  padding: var(--space-2);
+  background: var(--surface-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+/* ─── RECIPE PREVIEW ─── */
+.recipe-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--base);
+}
+
+.recipe-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--base-2);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.recipe-preview-body {
+  padding: var(--space-4);
+  min-height: 200px;
+}
+
+/* ─── ICON GRID ─── */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-2);
+}
+
+.icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-primary);
+  font-size: 20px;
+  color: var(--ink);
+  transition: box-shadow 150ms ease;
+}
+
+.icon-cell:hover { box-shadow: var(--shadow-1); }
+
+.icon-cell span {
+  font-size: 10px;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+}
+
+/* ─── COPY TOAST ─── */
+.copy-toast {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--base);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 200ms ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.copy-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── SPACING VISUALIZER ─── */
+.spacing-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.spacing-bar {
+  height: 20px;
+  background: var(--mango-green);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+.spacing-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* ─── ITEM LIST ─── */
+.item-list { list-style: none; }
+
+.item-list li {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.item-list li:last-child { border-bottom: none; }
+
+.item-list li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mango-green);
+  flex-shrink: 0;
+}
+
+/* ─── FILE TREE ─── */
+.file-tree {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink);
+  background: var(--base-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.file-tree .folder { color: var(--mango-green); }
+.file-tree .file { color: var(--ink-2); }
+
+/* ─── SECTION-LEVEL MODE DEMO ─── */
+.mode-demo-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: background 300ms ease, color 300ms ease;
+}
+
+.mode-demo-muted {
+  background: var(--surface-primary);
+}
+
+.mode-demo-ripe {
+  background: var(--surface-primary);
+}
+
+.mode-demo-card .demo-metric {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.mode-demo-card .demo-label {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.mode-demo-muted .demo-metric { color: var(--ink); }
+.mode-demo-muted .demo-label { color: var(--ink-2); }
+
+.mode-demo-ripe .demo-metric { color: var(--mango-orange-vivid); }
+.mode-demo-ripe .demo-label { color: var(--ink-2); }
+
+.mode-demo-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+
+/* ─── PRESENTATION COVER ─── */
+.presentation-cover {
+  background: linear-gradient(135deg, #FF9800, #FFC107);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+  color: white;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.presentation-cover h3 {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-1);
+}
+
+.presentation-cover p {
+  font-size: var(--text-body);
+  opacity: 0.85;
+}
+
+/* ─── MOBILE ─── */
+@media (max-width: 800px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .scroll-progress { left: 0; }
+  .container { padding: var(--space-3) var(--space-2); }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .text-display { font-size: 36px; }
+  .text-h1 { font-size: 30px; }
+  .hero-meta { flex-direction: column; gap: var(--space-2); }
+  .type-specimen { flex-wrap: wrap; }
+  .type-meta { margin-left: 0; width: 100%; }
+}
+
+/* ─── PRINT ─── */
+@media print {
+  .sidebar, .mode-toggle, .swatch-copy, .scroll-progress { display: none; }
+  .app-layout { grid-template-columns: 1fr; }
+  .main { grid-column: 1; }
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(31,37,40,0.2); }
+
+/* ─── FOCUS VISIBLE ─── */
+:focus-visible {
+  outline: 2px solid var(--mango-yellow);
+  outline-offset: 2px;
+}
+
+/* ─── REDUCED MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<div class="app-layout">
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i class="ph ph-mango"></i></div>
+      <div class="sidebar-brand-text">
+        Mango System
+        <span>Spec + Recipes</span>
+      </div>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="#hero" class="active"><i class="ph ph-house"></i>Overview</a></li>
+        <li><a href="#tokens"><i class="ph ph-palette"></i>Design Tokens</a></li>
+        <li><a href="#components"><i class="ph ph-cube"></i>Components</a></li>
+        <li><a href="#charts"><i class="ph ph-chart-line"></i>Charts</a></li>
+      </ul>
+
+      <div class="sidebar-section-title">Recipes</div>
+      <ul class="sidebar-nav">
+        <li><a href="#recipe-landing"><i class="ph ph-file"></i>Landing Page</a></li>
+        <li><a href="#recipe-case-study"><i class="ph ph-stack"></i>Case Study</a></li>
+        <li><a href="#recipe-presentation"><i class="ph ph-presentation"></i>Presentation</a></li>
+        <li><a href="#mode-demo"><i class="ph ph-toggle-right"></i>Mode Demo</a></li>
+      </ul>
+
+      <div class="sidebar-section-title">Reference</div>
+      <ul class="sidebar-nav">
+        <li><a href="#combinations"><i class="ph ph-git-merge"></i>Combinations</a></li>
+        <li><a href="#images"><i class="ph ph-image"></i>Image Recipes</a></li>
+        <li><a href="#errors"><i class="ph ph-warning"></i>Error Prevention</a></li>
+        <li><a href="#implementation"><i class="ph ph-code"></i>Implementation</a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-nav-secondary">
+      <div class="mode-toggle">
+        <div class="mode-toggle-label">Global Mode Preview</div>
+        <div class="mode-toggle-btns">
+          <button class="mode-btn active" data-mode="muted">Muted</button>
+          <button class="mode-btn" data-mode="ripe">Ripe</button>
+        </div>
+        <div class="mode-toggle-hint">Demonstrates section-level mode switching. In production, apply <code style="font-size:10px;">data-color-mode</code> to individual sections.</div>
+      </div>
+
+      <div class="sidebar-version">
+        <strong>Version 1.0</strong>
+        Confirmed 2026-02-06 · Implementation Ready
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section id="hero" class="hero">
+      <div class="hero-gradient"></div>
+      <div class="container-narrow" style="position: relative;">
+        <div class="hero-badge"><i class="ph ph-check-circle"></i> Implementation Ready — v1.0</div>
+        <h1 class="text-display">Mango Visual System</h1>
+        <p class="hero-sub">Design tokens, component specifications, page recipes, and image generation guidelines. Two color modes: muted (default) for sustained reading, ripe (restricted) for energy and proof.</p>
+        <div class="hero-meta">
+          <div class="hero-meta-item">
+            <strong>Version 1.0</strong>
+            Final — all confirmations integrated
+          </div>
+          <div class="hero-meta-item">
+            <strong>2026-02-06</strong>
+            Confirmed date
+          </div>
+          <div class="hero-meta-item">
+            <strong>Two modes</strong>
+            Muted (default) · Ripe (restricted)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+
+      <!-- ═══════ PART 1: DESIGN TOKENS ═══════ -->
+      <section id="tokens" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-palette"></i>Part 1: Design Tokens</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Specifications</h2>
+          </div>
+          <span class="mode-badge mode-badge-muted">muted</span>
+        </div>
+
+        <!-- Colors -->
+        <h3 class="text-h3" style="margin: var(--space-4) 0 var(--space-3);">Color Tokens</h3>
+
+        <h4 class="text-h5" style="margin: var(--space-4) 0 var(--space-2); color: var(--ink-2);">Foundation</h4>
+        <div class="swatch-grid">
+          <div class="swatch" data-token="--base" data-hex="#fbfaf7" onclick="copyToken('--base')">
+            <div class="swatch-color" style="background: var(--base);"></div>
+            <div class="swatch-label">--base</div>
+            <div class="swatch-value">#fbfaf7</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--base-2" data-hex="#f5f2eb" onclick="copyToken('--base-2')">
+            <div class="swatch-color" style="background: var(--base-2);"></div>
+            <div class="swatch-label">--base-2</div>
+            <div class="swatch-value">#f5f2eb</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--ink" data-hex="#1f2528" onclick="copyToken('--ink')">
+            <div class="swatch-color" style="background: var(--ink);"></div>
+            <div class="swatch-label">--ink</div>
+            <div class="swatch-value">#1f2528</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--ink-2" data-hex="#4b555c" onclick="copyToken('--ink-2')">
+            <div class="swatch-color" style="background: var(--ink-2);"></div>
+            <div class="swatch-label">--ink-2</div>
+            <div class="swatch-value">#4b555c</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin: var(--space-4) 0 var(--space-2); color: var(--ink-2);">Muted Mango (Default)</h4>
+        <div class="swatch-grid">
+          <div class="swatch" data-token="--mango-green" data-hex="#6f8f6a" onclick="copyToken('--mango-green')">
+            <div class="swatch-color" style="background: var(--mango-green);"></div>
+            <div class="swatch-label">--mango-green</div>
+            <div class="swatch-value">#6f8f6a · L* 54</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-yellow" data-hex="#d8c777" onclick="copyToken('--mango-yellow')">
+            <div class="swatch-color" style="background: var(--mango-yellow);"></div>
+            <div class="swatch-label">--mango-yellow</div>
+            <div class="swatch-value">#d8c777 · L* 62</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-orange" data-hex="#d49a63" onclick="copyToken('--mango-orange')">
+            <div class="swatch-color" style="background: var(--mango-orange);"></div>
+            <div class="swatch-label">--mango-orange</div>
+            <div class="swatch-value">#d49a63 · L* 59</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-red" data-hex="#b87463" onclick="copyToken('--mango-red')">
+            <div class="swatch-color" style="background: var(--mango-red);"></div>
+            <div class="swatch-label">--mango-red</div>
+            <div class="swatch-value">#b87463 · L* 45</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin: var(--space-4) 0 var(--space-2); color: var(--ink-2);">Ripe Mango (Locked)</h4>
+        <div class="swatch-grid">
+          <div class="swatch" data-token="--mango-green-vivid" data-hex="#2E7D32" onclick="copyToken('--mango-green-vivid')">
+            <div class="swatch-color" style="background: var(--mango-green-vivid);"></div>
+            <div class="swatch-label">--mango-green-vivid</div>
+            <div class="swatch-value">#2E7D32 · 5.8:1 ✅</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-yellow-vivid" data-hex="#FBC02D" onclick="copyToken('--mango-yellow-vivid')">
+            <div class="swatch-color" style="background: var(--mango-yellow-vivid);"></div>
+            <div class="swatch-label">--mango-yellow-vivid</div>
+            <div class="swatch-value">#FBC02D · 1.8:1 ❌</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-orange-vivid" data-hex="#F57C00" onclick="copyToken('--mango-orange-vivid')">
+            <div class="swatch-color" style="background: var(--mango-orange-vivid);"></div>
+            <div class="swatch-label">--mango-orange-vivid</div>
+            <div class="swatch-value">#F57C00 · 4.9:1 ✅</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--mango-red-vivid" data-hex="#C62828" onclick="copyToken('--mango-red-vivid')">
+            <div class="swatch-color" style="background: var(--mango-red-vivid);"></div>
+            <div class="swatch-label">--mango-red-vivid</div>
+            <div class="swatch-value">#C62828 · 7.0:1 ✅</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin: var(--space-4) 0 var(--space-2); color: var(--ink-2);">Derived Surfaces & Tints</h4>
+        <div class="swatch-grid">
+          <div class="swatch" data-token="--surface-primary" onclick="copyToken('--surface-primary')">
+            <div class="swatch-color" style="background: var(--surface-primary);"></div>
+            <div class="swatch-label">--surface-primary</div>
+            <div class="swatch-value">white 55%</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--surface-secondary" onclick="copyToken('--surface-secondary')">
+            <div class="swatch-color" style="background: var(--surface-secondary);"></div>
+            <div class="swatch-label">--surface-secondary</div>
+            <div class="swatch-value">white 45%</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--tint-green" onclick="copyToken('--tint-green')">
+            <div class="swatch-color" style="background: var(--tint-green);"></div>
+            <div class="swatch-label">--tint-green</div>
+            <div class="swatch-value">structural</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--tint-yellow" onclick="copyToken('--tint-yellow')">
+            <div class="swatch-color" style="background: var(--tint-yellow);"></div>
+            <div class="swatch-label">--tint-yellow</div>
+            <div class="swatch-value">insight</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--tint-orange" onclick="copyToken('--tint-orange')">
+            <div class="swatch-color" style="background: var(--tint-orange);"></div>
+            <div class="swatch-label">--tint-orange</div>
+            <div class="swatch-value">action</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--grad-gy" onclick="copyToken('--grad-gy')">
+            <div class="swatch-color" style="background: var(--grad-gy);"></div>
+            <div class="swatch-label">--grad-gy</div>
+            <div class="swatch-value">green→yellow</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+          <div class="swatch" data-token="--grad-yo" onclick="copyToken('--grad-yo')">
+            <div class="swatch-color" style="background: var(--grad-yo);"></div>
+            <div class="swatch-label">--grad-yo</div>
+            <div class="swatch-value">yellow→orange</div>
+            <div class="swatch-copy"><i class="ph ph-copy"></i></div>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Typography Tokens</h3>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-3);">Font stack: <code class="text-mono" style="background: var(--base-2); padding: 2px 8px; border-radius: 6px; font-size: 13px;">"Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif</code></p>
+
+        <div style="border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;">
+          <div class="type-specimen">
+            <span class="type-token">--text-display</span>
+            <span class="type-sample" style="font-size: 48px; font-weight: 700; letter-spacing: -0.02em;">Display</span>
+            <span class="type-meta">48px / 700 / 1.08</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-h1</span>
+            <span class="type-sample" style="font-size: 42px; font-weight: 700; letter-spacing: -0.02em;">Heading One</span>
+            <span class="type-meta">42px / 700 / 1.14</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-h2</span>
+            <span class="type-sample" style="font-size: 34px; font-weight: 500; letter-spacing: -0.01em;">Heading Two</span>
+            <span class="type-meta">34px / 500 / 1.18</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-h3</span>
+            <span class="type-sample" style="font-size: 27px; font-weight: 500; letter-spacing: -0.01em;">Heading Three</span>
+            <span class="type-meta">27px / 500 / 1.19</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-h4</span>
+            <span class="type-sample" style="font-size: 22px; font-weight: 500;">Heading Four</span>
+            <span class="type-meta">22px / 500 / 1.27</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-h5</span>
+            <span class="type-sample" style="font-size: 18px; font-weight: 500;">Heading Five</span>
+            <span class="type-meta">18px / 500 / 1.33</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-body</span>
+            <span class="type-sample" style="font-size: 16px; font-weight: 400;">Body text for sustained reading</span>
+            <span class="type-meta">16px / 400 / 1.625</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-small</span>
+            <div class="type-sample" style="font-size: 14px; font-weight: 400;">Small text for labels and meta information</div>
+            <span class="type-meta">14px / 400 / 1.57</span>
+          </div>
+          <div class="type-specimen">
+            <span class="type-token">--text-micro</span>
+            <span class="type-sample" style="font-size: 12px; font-weight: 400; letter-spacing: 0.01em;">Micro text for captions</span>
+            <span class="type-meta">12px / 400 / 1.33</span>
+          </div>
+        </div>
+
+        <!-- Spacing -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Spacing Tokens</h3>
+        <div style="border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-3);">
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-1);"></div><span class="spacing-label">--space-1 = 8px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-2);"></div><span class="spacing-label">--space-2 = 16px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-3);"></div><span class="spacing-label">--space-3 = 24px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-4);"></div><span class="spacing-label">--space-4 = 32px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-5);"></div><span class="spacing-label">--space-5 = 48px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-6);"></div><span class="spacing-label">--space-6 = 64px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-7);"></div><span class="spacing-label">--space-7 = 80px</span></div>
+          <div class="spacing-row"><div class="spacing-bar" style="width: var(--space-8);"></div><span class="spacing-label">--space-8 = 120px</span></div>
+        </div>
+
+        <!-- Layout -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Layout Tokens</h3>
+        <div class="grid-2">
+          <div class="card">
+            <h4 class="text-h5" style="margin-bottom: var(--space-2);">Container</h4>
+            <ul class="item-list text-small">
+              <li>Max width: 1200px</li>
+              <li>Grid gutter: 24px</li>
+              <li>Radius sm: 10px</li>
+              <li>Radius md: 14px</li>
+              <li>Radius lg: 18px</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 class="text-h5" style="margin-bottom: var(--space-2);">Breakpoints</h4>
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Width</th><th>Columns</th></tr></thead>
+              <tbody>
+                <tr><td>Mobile</td><td>&lt;640px</td><td>4</td></tr>
+                <tr><td>Tablet</td><td>640–1024px</td><td>8</td></tr>
+                <tr><td>Desktop</td><td>&gt;1024px</td><td>12</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 1.2: COMPONENTS ═══════ -->
+      <section id="components" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-cube"></i>Part 1.2: Components</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Specifications</h2>
+          </div>
+          <span class="mode-badge mode-badge-muted">muted</span>
+        </div>
+
+        <!-- Buttons -->
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">Buttons</h3>
+        <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3);">
+          <button class="btn-primary"><i class="ph ph-plus"></i>Primary</button>
+          <button class="btn-secondary"><i class="ph ph-arrows-clockwise"></i>Secondary</button>
+          <button class="btn-tertiary">Tertiary</button>
+          <button class="btn-primary" disabled>Disabled</button>
+        </div>
+
+        <div class="code-header">
+          <span>buttons.css</span>
+          <span class="code-copy" onclick="copyCode(this)"><i class="ph ph-copy"></i> Copy</span>
+        </div>
+        <div class="code-block" data-lang="css"><span class="sel">.btn-primary</span> {
+  <span class="prop">display</span>: <span class="val">inline-flex</span>;
+  <span class="prop">align-items</span>: <span class="val">center</span>;
+  <span class="prop">gap</span>: <span class="val">8px</span>;
+  <span class="prop">padding</span>: <span class="val">10px 14px</span>;
+  <span class="prop">border-radius</span>: <span class="val">14px</span>;
+  <span class="prop">border</span>: <span class="val">1px solid rgba(111, 143, 106, 0.35)</span>;
+  <span class="prop">background</span>: <span class="val">rgba(111, 143, 106, 0.16)</span>;
+  <span class="prop">color</span>: <span class="val">var(--ink)</span>;
+  <span class="prop">box-shadow</span>: <span class="val">var(--shadow-1)</span>;
+  <span class="prop">transition</span>: <span class="val">box-shadow 200ms ease</span>;
+}</div>
+
+        <!-- Cards -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Cards</h3>
+        <div class="grid-3" style="margin-bottom: var(--space-3);">
+          <div class="card">
+            <h4 class="text-h5">Default Card</h4>
+            <p class="text-small" style="color: var(--ink-2); margin-top: 8px;">Surface primary background with subtle shadow.</p>
+          </div>
+          <div class="card card-tint-green">
+            <h4 class="text-h5">Tint Green</h4>
+            <p class="text-small" style="color: var(--ink-2); margin-top: 8px;">Structural emphasis sections.</p>
+          </div>
+          <div class="card card-tint-yellow">
+            <h4 class="text-h5">Tint Yellow</h4>
+            <p class="text-small" style="color: var(--ink-2); margin-top: 8px;">Insight emphasis sections.</p>
+          </div>
+        </div>
+
+        <!-- Inputs -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Form Inputs</h3>
+        <div class="grid-2" style="margin-bottom: var(--space-3);">
+          <div>
+            <label class="text-small" style="display: block; margin-bottom: 6px; color: var(--ink-2);">Default</label>
+            <input type="text" class="input" placeholder="Type something...">
+          </div>
+          <div>
+            <label class="text-small" style="display: block; margin-bottom: 6px; color: var(--ink-2);">Success</label>
+            <input type="text" class="input input-success" value="Valid input">
+          </div>
+        </div>
+
+        <!-- Icons -->
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Icon System (Phosphor)</h3>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-3);">Weight: Regular (default), Bold (emphasis). Size: 24px default, 20px small, 16px micro. Color: --ink at 90% opacity.</p>
+        <div class="icon-grid">
+          <div class="icon-cell"><i class="ph ph-plus"></i><span>plus</span></div>
+          <div class="icon-cell"><i class="ph ph-arrow-right"></i><span>arrow-right</span></div>
+          <div class="icon-cell"><i class="ph ph-check"></i><span>check</span></div>
+          <div class="icon-cell"><i class="ph ph-copy"></i><span>copy</span></div>
+          <div class="icon-cell"><i class="ph ph-palette"></i><span>palette</span></div>
+          <div class="icon-cell"><i class="ph ph-cube"></i><span>cube</span></div>
+          <div class="icon-cell"><i class="ph ph-chart-line"></i><span>chart-line</span></div>
+          <div class="icon-cell"><i class="ph ph-image"></i><span>image</span></div>
+          <div class="icon-cell"><i class="ph ph-warning"></i><span>warning</span></div>
+          <div class="icon-cell"><i class="ph ph-mango"></i><span>mango</span></div>
+          <div class="icon-cell"><i class="ph ph-presentation"></i><span>presentation</span></div>
+          <div class="icon-cell"><i class="ph ph-file"></i><span>file</span></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 1.3: CHARTS ═══════ -->
+      <section id="charts" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-chart-line"></i>Part 1.3: Charts</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Chart.js Theme</h2>
+          </div>
+          <span class="mode-badge mode-badge-muted">muted</span>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: var(--space-4);">
+          <div>
+            <h4 class="text-h5" style="margin-bottom: var(--space-2);">Line Chart</h4>
+            <div class="chart-container">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-h5" style="margin-bottom: var(--space-2);">Bar Chart</h4>
+            <div class="chart-container">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Color Usage by Data Type</h4>
+        <table class="data-table">
+          <thead>
+            <tr><th>Data Type</th><th>Chart Color</th><th>Background</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Positive trend</td><td>--mango-green</td><td>Transparent</td><td>Success without semantic lock</td></tr>
+            <tr><td>Negative trend</td><td>--mango-red</td><td>Transparent</td><td>Caution without semantic lock</td></tr>
+            <tr><td>Neutral/comparison</td><td>--ink-2</td><td>Transparent</td><td>Baseline reference</td></tr>
+            <tr><td>Multiple series</td><td>Primary → Neutral</td><td>Transparent</td><td>Max 4 series</td></tr>
+            <tr><td>Single series emphasis</td><td>--mango-orange</td><td>Transparent</td><td>Highlight moment</td></tr>
+            <tr><td>Target/goal line</td><td>--ink</td><td>Transparent</td><td>1px dashed</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ═══════ PART 2.1: LANDING PAGE ═══════ -->
+      <section id="recipe-landing" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-file"></i>Part 2.1: Page Recipes</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Landing Page</h2>
+          </div>
+          <span class="mode-badge mode-badge-muted">muted</span>
+        </div>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-4);">Trust-building, sustained reading, conversion. Default color mode.</p>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Surface Hierarchy</h4>
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--space-4);">
+          <div class="surface-preview surface-level-0"><span>Hero</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+          <div class="surface-preview surface-level-1"><span>Problem</span><span class="text-micro" style="color: var(--ink-2);">Level 1 · --base-2</span></div>
+          <div class="surface-preview surface-level-0"><span>Philosophy</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+          <div class="surface-preview surface-level-3"><span>Proof</span><span class="text-micro" style="color: var(--ink-2);">Level 3 · --tint-green</span></div>
+          <div class="surface-preview surface-level-1"><span>Process</span><span class="text-micro" style="color: var(--ink-2);">Level 1 · --base-2</span></div>
+          <div class="surface-preview surface-level-0"><span>Context</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+          <div class="surface-preview" style="background: var(--tint-yellow);"><span>Credibility</span><span class="text-micro" style="color: var(--ink-2);">Level 3 · --tint-yellow</span></div>
+          <div class="surface-preview surface-level-0"><span>CTA</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+        </div>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Live Preview</h4>
+        <div class="recipe-preview">
+          <div class="recipe-preview-header">
+            <span>Landing Page Recipe</span>
+            <span class="text-micro" style="font-family: var(--font-mono);">data-color-mode="muted"</span>
+          </div>
+          <div class="recipe-preview-body" style="background: var(--base);">
+            <div style="max-width: 560px; margin: 0 auto; text-align: center; padding: var(--space-4) 0;">
+              <h2 class="text-h1" style="margin-bottom: var(--space-2);">Systems people actually use</h2>
+              <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-3);">Turning operational friction into repeatable process. No frameworks. No jargon. Just what works.</p>
+              <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                <button class="btn-primary">Explore fit</button>
+                <button class="btn-tertiary">View case studies</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 2.1: CASE STUDY ═══════ -->
+      <section id="recipe-case-study" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-stack"></i>Part 2.1: Page Recipes</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Case Study Page</h2>
+          </div>
+          <span class="mode-badge mode-badge-mixed">mixed</span>
+        </div>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-4);">Proof of work, energy moments, results emphasis. Mixed muted + ripe.</p>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Surface Hierarchy</h4>
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--space-4);">
+          <div class="surface-preview surface-level-0"><span>Hero</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+          <div class="surface-preview surface-level-1"><span>Challenge</span><span class="text-micro" style="color: var(--ink-2);">Level 1 · --base-2</span></div>
+          <div class="surface-preview surface-level-0"><span>Approach</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+          <div class="surface-preview surface-level-3"><span>Process</span><span class="text-micro" style="color: var(--ink-2);">Level 3 · --tint-green</span></div>
+          <div class="surface-preview surface-level-4"><span>Results</span><span class="text-micro" style="color: var(--ink-2);">Level 4 · --grad-yo</span></div>
+          <div class="surface-preview surface-level-1"><span>Artifacts</span><span class="text-micro" style="color: var(--ink-2);">Level 1 · --base-2</span></div>
+          <div class="surface-preview surface-level-0"><span>CTA</span><span class="text-micro" style="color: var(--ink-2);">Level 0 · --base</span></div>
+        </div>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Live Preview</h4>
+        <div class="recipe-preview">
+          <div class="recipe-preview-header">
+            <span>Case Study — Results Section</span>
+            <span class="text-micro" style="font-family: var(--font-mono);">data-color-mode="ripe" (metrics only)</span>
+          </div>
+          <div class="recipe-preview-body" style="background: var(--grad-yo);">
+            <div style="text-align: center; padding: var(--space-3) 0;">
+              <div class="grid-3">
+                <div class="metric-card metric-card-ripe">
+                  <div class="metric">50% → 100%</div>
+                  <div class="metric-label">Adoption rate</div>
+                </div>
+                <div class="metric-card metric-card-ripe">
+                  <div class="metric">4h → 45m</div>
+                  <div class="metric-label">Process time</div>
+                </div>
+                <div class="metric-card metric-card-ripe">
+                  <div class="metric">3×</div>
+                  <div class="metric-label">Output velocity</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 2.1: PRESENTATION ═══════ -->
+      <section id="recipe-presentation" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-presentation"></i>Part 2.1: Page Recipes</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Presentation Deck</h2>
+          </div>
+          <span class="mode-badge mode-badge-ripe">ripe</span>
+        </div>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-4);">Energy, attention capture, persuasive proof. Full vivid palette.</p>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Cover Slide (Exception)</h4>
+        <div class="recipe-preview" style="margin-bottom: var(--space-4);">
+          <div class="recipe-preview-header">
+            <span>Presentation — Cover</span>
+            <span class="text-micro" style="font-family: var(--font-mono);">Full logo gradient permitted</span>
+          </div>
+          <div class="presentation-cover">
+            <h3>Mango Management</h3>
+            <p>Visual System · Version 1.0</p>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin-bottom: var(--space-2);">Results Slide</h4>
+        <div class="recipe-preview">
+          <div class="recipe-preview-header">
+            <span>Presentation — Results</span>
+            <span class="text-micro" style="font-family: var(--font-mono);">data-color-mode="ripe"</span>
+          </div>
+          <div class="recipe-preview-body" style="background: var(--base);">
+            <div style="text-align: center; padding: var(--space-3) 0;">
+              <h3 class="text-h3" style="margin-bottom: var(--space-3);">Results after 90 days</h3>
+              <div class="grid-3">
+                <div style="padding: var(--space-3); border-radius: var(--radius-lg); background: var(--mango-green-vivid); color: white;">
+                  <div style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em;">100%</div>
+                  <div style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; margin-top: 4px;">Adoption</div>
+                </div>
+                <div style="padding: var(--space-3); border-radius: var(--radius-lg); background: var(--mango-orange-vivid); color: white;">
+                  <div style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em;">45 min</div>
+                  <div style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; margin-top: 4px;">Process time</div>
+                </div>
+                <div style="padding: var(--space-3); border-radius: var(--radius-lg); background: var(--mango-red-vivid); color: white;">
+                  <div style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em;">0</div>
+                  <div style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; margin-top: 4px;">Escalations</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="text-h5" style="margin: var(--space-4) 0 var(--space-2);">Bold Icons (Ripe Exception)</h4>
+        <div class="icon-grid" style="max-width: 400px;">
+          <div class="icon-cell" style="color: var(--mango-green-vivid);"><i class="ph-bold ph-plus"></i><span>bold</span></div>
+          <div class="icon-cell" style="color: var(--mango-orange-vivid);"><i class="ph-bold ph-chart-line"></i><span>bold</span></div>
+          <div class="icon-cell" style="color: var(--mango-red-vivid);"><i class="ph-bold ph-warning"></i><span>bold</span></div>
+          <div class="icon-cell" style="color: var(--mango-yellow-vivid);"><i class="ph-bold ph-star"></i><span>bold</span></div>
+        </div>
+      </section>
+
+      <!-- ═══════ SECTION-LEVEL MODE DEMO ═══════ -->
+      <section id="mode-demo" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-toggle-right"></i>Section-Level Modes</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Mode Switching Demo</h2>
+          </div>
+        </div>
+        <p class="text-body" style="color: var(--ink-2); margin-bottom: var(--space-4);">The spec defines modes as section-scoped. Toggle the right card between muted and ripe to see how <code class="text-mono" style="background: var(--base-2); padding: 2px 6px; border-radius: 4px; font-size: 13px;">data-color-mode</code> cascades.</p>
+
+        <div class="grid-2">
+          <div data-color-mode="muted">
+            <div class="mode-demo-card mode-demo-muted">
+              <div class="demo-metric">50% → 100%</div>
+              <div class="demo-label">Adoption rate</div>
+              <div style="margin-top: var(--space-2); font-size: 11px; color: var(--ink-2); font-family: var(--font-mono);">data-color-mode="muted"</div>
+            </div>
+          </div>
+          <div data-color-mode="ripe" id="modeDemoCard">
+            <div class="mode-demo-card mode-demo-ripe">
+              <div class="demo-metric">50% → 100%</div>
+              <div class="demo-label">Adoption rate</div>
+              <div style="margin-top: var(--space-2); font-size: 11px; color: var(--ink-2); font-family: var(--font-mono);">data-color-mode="ripe"</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3); align-items: center;">
+          <span class="text-small" style="color: var(--ink-2);">Toggle right card:</span>
+          <div class="mode-toggle-btns" style="width: auto;">
+            <button class="mode-btn active" data-demo-mode="muted" onclick="toggleDemoMode('muted')">Muted</button>
+            <button class="mode-btn" data-demo-mode="ripe" onclick="toggleDemoMode('ripe')">Ripe</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 2.2: COMBINATIONS ═══════ -->
+      <section id="combinations" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-git-merge"></i>Part 2.2: Component Combinations</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Recipes</h2>
+          </div>
+          <span class="mode-badge mode-badge-muted">muted</span>
+        </div>
+
+        <!-- Metric Card -->
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">Metric Card</h3>
+        <div class="grid-2" style="margin-bottom: var(--space-4);">
+          <div>
+            <p class="text-small" style="color: var(--ink-2); margin-bottom: var(--space-2);">Muted (default)</p>
+            <div class="metric-card">
+              <div class="metric">50% → 100%</div>
+              <div class="metric-label">Adoption rate</div>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 8px;">After 90 days of implementation across three teams.</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-small" style="color: var(--ink-2); margin-bottom: var(--space-2);">Ripe (presentations only)</p>
+            <div class="metric-card metric-card-ripe">
+              <div class="metric">50% → 100%</div>
+              <div class="metric-label">Adoption rate</div>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 8px;">After 90 days of implementation across three teams.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Process Step -->
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">Process Step</h3>
+        <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <h4 class="text-h5">Discovery</h4>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 4px;">Map current state, identify friction points, document workarounds.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-yellow">2</div>
+            <div>
+              <h4 class="text-h5">Synthesis</h4>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 4px;">Pattern recognition, root cause analysis, opportunity mapping.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-orange">3</div>
+            <div>
+              <h4 class="text-h5">Build</h4>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 4px;">Design the system, create artifacts, establish feedback loops.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num step-neutral">4</div>
+            <div>
+              <h4 class="text-h5">Transfer</h4>
+              <p class="text-small" style="color: var(--ink-2); margin-top: 4px;">Train the team, document the process, hand off ownership.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">Comparison Table</h3>
+        <table class="data-table" style="margin-bottom: var(--space-4);">
+          <thead>
+            <tr><th>Feature</th><th>Before</th><th>After</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Process time</td><td>4 hours</td><td class="positive">45 minutes</td></tr>
+            <tr><td>Error rate</td><td>12%</td><td class="positive">0.5%</td></tr>
+            <tr><td>Escalations/week</td><td>8</td><td class="positive">0</td></tr>
+            <tr><td>Team satisfaction</td><td>3.2/10</td><td class="positive">8.7/10</td></tr>
+            <tr><td>Documentation</td><td>None</td><td class="positive">Complete</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ═══════ PART 2.3: IMAGE RECIPES ═══════ -->
+      <section id="images" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-image"></i>Part 2.3: Image Generation</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Recipes</h2>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h4 class="text-h5" style="margin-bottom: var(--space-1);">Artifact-Led</h4>
+            <p class="text-small" style="color: var(--ink-2); margin-bottom: var(--space-2);">Case study covers, proof sections, portfolio</p>
+            <div class="code-block" style="font-size: 11px; margin: 0; padding: var(--space-2);"><span class="str">"Documentary photograph of [printed kanban board with sticky notes] on [light oak table], natural soft window light from upper left, 45-degree overhead angle, shallow depth of field f/2.8, background #f5f2eb, desaturated color grading -15%, visible paper texture and wear, handwritten annotations in blue ink, no people, 4:3 aspect ratio"</span></div>
+          </div>
+          <div class="card">
+            <h4 class="text-h5" style="margin-bottom: var(--space-1);">Environmental</h4>
+            <p class="text-small" style="color: var(--ink-2); margin-bottom: var(--space-2);">Process sections, team culture, "how we work"</p>
+            <div class="code-block" style="font-size: 11px; margin: 0; padding: var(--space-2);"><span class="str">"Documentary photography, [quiet office scene: person reviewing documents at standing desk], available natural light, candid moment unaware of camera, shallow depth of field, background shows [whiteboard with diagrams] slightly out of focus, color palette warm neutrals #fbfaf7 #f5f2eb, no direct eye contact, analog film aesthetic, 35mm lens"</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 2.4: ERROR PREVENTION ═══════ -->
+      <section id="errors" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-warning"></i>Part 2.4: Error Prevention</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Recipes</h2>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr><th>Violation</th><th>Detection</th><th>Fix</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Vivid color for body text</td><td>Contrast ratio &lt;4.5:1</td><td>Switch to muted equivalent</td></tr>
+            <tr><td>Adjacent gradient sections</td><td>Two --grad-* within viewport</td><td>Separate with Level 0 or 1</td></tr>
+            <tr><td>Red icon on white</td><td>--mango-red-vivid in icons</td><td>Use --ink or --ink-2</td></tr>
+            <tr><td>Animated counter</td><td>transition on number change</td><td>Static number or progress bar</td></tr>
+            <tr><td>Exclamation point in headline</td><td>Text content scan</td><td>Remove, use period</td></tr>
+            <tr><td>"Revolutionary" in copy</td><td>Keyword scan</td><td>Replace with specific capability</td></tr>
+            <tr><td>Pure white background</td><td>background: #fff</td><td>Use --base</td></tr>
+            <tr><td>Missing focus indicator</td><td>:focus style check</td><td>Add 2px --mango-yellow outline</td></tr>
+            <tr><td>Auto-playing carousel</td><td>setInterval detection</td><td>Remove auto-advance</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">New Component Checklist</h3>
+        <div class="card">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) 0;">
+            <div class="text-small">☐ Uses only canonical tokens</div>
+            <div class="text-small">☐ Respects color mode inheritance</div>
+            <div class="text-small">☐ Semantic colors only for success/warning/error</div>
+            <div class="text-small">☐ Motion respects reduced-motion</div>
+            <div class="text-small">☐ Focus state visible and yellow</div>
+            <div class="text-small">☐ Disabled state meets contrast (4.5:1)</div>
+            <div class="text-small">☐ Tested in both muted and ripe modes</div>
+            <div class="text-small">☐ No exclamation points in labels</div>
+            <div class="text-small">☐ No "will transform" language</div>
+            <div class="text-small">☐ No hex values outside tokens</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PART 3: IMPLEMENTATION ═══════ -->
+      <section id="implementation" class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-label"><i class="ph ph-code"></i>Part 3: Implementation</div>
+            <h2 class="text-h2" style="margin-top: var(--space-3);">Guide</h2>
+          </div>
+        </div>
+
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">File Structure</h3>
+        <div class="file-tree" style="margin-bottom: var(--space-4);">
+          <span class="folder">📁 design-system/</span><br>
+          &nbsp;&nbsp;<span class="folder">📁 tokens/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 colors.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 typography.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 spacing.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 layout.css</span><br>
+          &nbsp;&nbsp;<span class="folder">📁 components/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 buttons.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 cards.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 forms.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 icons.js</span><br>
+          &nbsp;&nbsp;<span class="folder">📁 recipes/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 landing-page.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 case-study.css</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 presentation.css</span><br>
+          &nbsp;&nbsp;<span class="folder">📁 charts/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 chartjs-theme.js</span><br>
+          &nbsp;&nbsp;<span class="folder">📁 assets/</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">📄 image-prompts.md</span>
+        </div>
+
+        <h3 class="text-h3" style="margin-bottom: var(--space-3);">Quick Start</h3>
+        <div class="code-header">
+          <span>Terminal</span>
+          <span class="code-copy" onclick="copyCode(this)"><i class="ph ph-copy"></i> Copy</span>
+        </div>
+        <div class="code-block" data-lang="bash"><span class="comment"># 1. Install Phosphor Icons</span>
+npm install @phosphor-icons/react
+
+<span class="comment"># 2. Import tokens</span>
+<span class="kw">@import</span> <span class="str">'design-system/tokens/colors.css'</span>;
+<span class="kw">@import</span> <span class="str">'design-system/tokens/typography.css'</span>;
+
+<span class="comment"># 3. Import components</span>
+<span class="kw">@import</span> <span class="str">'design-system/components/buttons.css'</span>;
+
+<span class="comment"># 4. Configure Chart.js</span>
+<span class="kw">import</span> { mangoChartDefaults } <span class="kw">from</span> <span class="str">'./charts/chartjs-theme.js'</span>;
+Chart.defaults = { ...Chart.defaults, ...mangoChartDefaults };</div>
+
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Mode Switching</h3>
+        <div class="code-header">
+          <span>HTML + React</span>
+          <span class="code-copy" onclick="copyCode(this)"><i class="ph ph-copy"></i> Copy</span>
+        </div>
+        <div class="code-block" data-lang="html"><span class="comment">&lt;!-- Default mode --&gt;</span>
+&lt;<span class="tag">html</span> <span class="attr">data-color-mode</span>=<span class="str">"muted"</span>&gt;
+
+<span class="comment">&lt;!-- Exception section --&gt;</span>
+&lt;<span class="tag">section</span> <span class="attr">data-color-mode</span>=<span class="str">"ripe"</span>&gt;
+  &lt;<span class="tag">ResultsSection</span> /&gt;
+&lt;/<span class="tag">section</span>&gt;</div>
+
+        <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">Token Quick Reference</h3>
+        <div class="code-header">
+          <span>:root custom properties</span>
+          <span class="code-copy" onclick="copyCode(this)"><i class="ph ph-copy"></i> Copy</span>
+        </div>
+        <div class="code-block" data-lang="css"><span class="sel">:root</span> {
+  <span class="comment">/* Colors */</span>
+  <span class="prop">--base</span>: <span class="val">#fbfaf7</span>;
+  <span class="prop">--base-2</span>: <span class="val">#f5f2eb</span>;
+  <span class="prop">--ink</span>: <span class="val">#1f2528</span>;
+  <span class="prop">--ink-2</span>: <span class="val">#4b555c</span>;
+  <span class="prop">--mango-green</span>: <span class="val">#6f8f6a</span>;
+  <span class="prop">--mango-yellow</span>: <span class="val">#d8c777</span>;
+  <span class="prop">--mango-orange</span>: <span class="val">#d49a63</span>;
+  <span class="prop">--mango-red</span>: <span class="val">#b87463</span>;
+  <span class="prop">--mango-green-vivid</span>: <span class="val">#2E7D32</span>;
+  <span class="prop">--mango-yellow-vivid</span>: <span class="val">#FBC02D</span>;
+  <span class="prop">--mango-orange-vivid</span>: <span class="val">#F57C00</span>;
+  <span class="prop">--mango-red-vivid</span>: <span class="val">#C62828</span>;
+  <span class="comment">/* Surfaces */</span>
+  <span class="prop">--surface-primary</span>: <span class="val">rgba(255, 255, 255, 0.55)</span>;
+  <span class="prop">--tint-green</span>: <span class="val">rgba(111, 143, 106, 0.10)</span>;
+  <span class="prop">--tint-yellow</span>: <span class="val">rgba(216, 199, 119, 0.12)</span>;
+  <span class="prop">--tint-orange</span>: <span class="val">rgba(212, 154, 99, 0.10)</span>;
+  <span class="prop">--grad-gy</span>: <span class="val">linear-gradient(135deg, rgba(111, 143, 106, 0.14), rgba(216, 199, 119, 0.12))</span>;
+  <span class="prop">--grad-yo</span>: <span class="val">linear-gradient(135deg, rgba(216, 199, 119, 0.14), rgba(212, 154, 99, 0.12))</span>;
+  <span class="comment">/* Shadows */</span>
+  <span class="prop">--shadow-1</span>: <span class="val">0 10px 24px rgba(31, 37, 40, 0.06)</span>;
+  <span class="prop">--shadow-2</span>: <span class="val">0 16px 38px rgba(31, 37, 40, 0.10)</span>;
+}</div>
+      </section>
+
+      <!-- Footer -->
+      <footer style="padding: var(--space-5) 0; border-top: 1px solid var(--line); text-align: center;">
+        <p class="text-small" style="color: var(--ink-2);">Mango Management Visual System · Spec + Recipes v1.0 · Implementation Ready · Confirmed 2026-02-06</p>
+      </footer>
+
+    </div>
+  </main>
+</div>
+
+<!-- Copy toast -->
+<div class="copy-toast" id="copyToast">Token copied</div>
+
+<script>
+// ─── SCROLL PROGRESS ───
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+  document.documentElement.style.setProperty('--scroll-progress', progress);
+});
+
+// ─── MODE TOGGLE ───
+const modeBtns = document.querySelectorAll('.mode-btn[data-mode]');
+const html = document.documentElement;
+
+modeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    html.setAttribute('data-color-mode', mode);
+    modeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ─── SECTION-LEVEL MODE DEMO ───
+function toggleDemoMode(mode) {
+  const card = document.getElementById('modeDemoCard');
+  card.setAttribute('data-color-mode', mode);
+  document.querySelectorAll('[data-demo-mode]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.demoMode === mode);
+  });
+}
+
+// ─── COPY TOKEN ───
+function copyToken(token) {
+  navigator.clipboard.writeText(token).then(() => {
+    const toast = document.getElementById('copyToast');
+    toast.textContent = `Copied ${token}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+// ─── COPY CODE ───
+function copyCode(el) {
+  const codeBlock = el.closest('.code-header')?.nextElementSibling;
+  if (codeBlock) {
+    const text = codeBlock.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const toast = document.getElementById('copyToast');
+      toast.textContent = 'Code copied';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    });
+  }
+}
+
+// ─── SIDEBAR ACTIVE STATE ───
+const navLinks = document.querySelectorAll('.sidebar-nav a');
+const sections = document.querySelectorAll('section[id]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(section => observer.observe(section));
+
+// ─── CHART.JS THEME ───
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = '"Roboto", system-ui, sans-serif';
+  Chart.defaults.font.size = 14;
+  Chart.defaults.font.weight = '400';
+  Chart.defaults.color = '#4b555c';
+  Chart.defaults.scale.grid.color = 'rgba(31, 37, 40, 0.06)';
+  Chart.defaults.scale.grid.borderColor = 'rgba(31, 37, 40, 0.10)';
+  Chart.defaults.layout.padding = 16;
+
+  const mangoColors = {
+    primary: '#6f8f6a',
+    secondary: '#d8c777',
+    tertiary: '#d49a63',
+    neutral: '#4b555c'
+  };
+
+  // Line Chart
+  new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Adoption',
+        data: [20, 35, 48, 62, 78, 92],
+        borderColor: mangoColors.primary,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+        backgroundColor: 'rgba(111, 143, 106, 0.08)'
+      }, {
+        label: 'Target',
+        data: [30, 45, 60, 70, 80, 90],
+        borderColor: mangoColors.neutral,
+        borderWidth: 1,
+        borderDash: [4, 4],
+        pointRadius: 0,
+        tension: 0.4
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: 'rgba(31, 37, 40, 0.06)' }, ticks: { font: { size: 11 } }, beginAtZero: true }
+      },
+      interaction: { intersect: false, mode: 'index' }
+    }
+  });
+
+  // Bar Chart
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      datasets: [{
+        label: 'Output',
+        data: [42, 58, 73, 91],
+        backgroundColor: mangoColors.primary,
+        borderRadius: 4,
+        borderSkipped: false,
+        barPercentage: 0.6,
+        categoryPercentage: 0.8
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { display: false }, beginAtZero: true }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>
