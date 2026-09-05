@@ -280,6 +280,30 @@ tr:nth-child(even) td{ background: rgba(255,255,255,0.25); }
 .positive{ color: var(--mango-green-vivid); font-weight:500; }
 .negative{ color: var(--mango-red-vivid); font-weight:500; }
 
+/* Below 640px, tables with 3+ columns can't shrink to fit a phone width without
+   truncating cell text — stack each row into a label/value card instead of scrolling. */
+@media (max-width: 640px){
+  .data-table-wrap{ overflow-x:visible; border:none; border-radius:0; }
+  .data-table-wrap table, .data-table-wrap thead, .data-table-wrap tbody,
+  .data-table-wrap tr, .data-table-wrap th, .data-table-wrap td{ display:block; }
+  .data-table-wrap thead{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+  .data-table-wrap tr{
+    border:1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-primary);
+    padding:4px 14px; margin-bottom:10px;
+  }
+  .data-table-wrap tr:last-child{ margin-bottom:0; }
+  .data-table-wrap tr:nth-child(even) td{ background:transparent; }
+  .data-table-wrap td{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:10px 0; border-bottom:1px solid var(--line); text-align:right;
+  }
+  .data-table-wrap td:last-child{ border-bottom:none; }
+  .data-table-wrap td::before{
+    content: attr(data-label); flex-shrink:0; text-align:left;
+    font-size:11.5px; font-weight:500; letter-spacing:0.04em; text-transform:uppercase; color: var(--ink-2);
+  }
+}
+
 /* ============ BUTTONS ============ */
 .btn-primary,.btn-secondary,.btn-tertiary{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -1141,6 +1165,16 @@ tactile surface, fine art style</code></pre></div>
           setTimeout(function(){ btn.textContent = orig; }, 1400);
         }).catch(function(){});
       }
+    });
+  });
+
+  // ---- label table cells for the mobile stacked-card layout ----
+  document.querySelectorAll('.data-table-wrap table').forEach(function(table){
+    var headers = Array.prototype.map.call(table.querySelectorAll('thead th'), function(th){ return th.textContent; });
+    table.querySelectorAll('tbody tr').forEach(function(row){
+      Array.prototype.forEach.call(row.children, function(cell, i){
+        if(headers[i]) cell.setAttribute('data-label', headers[i]);
+      });
     });
   });
 
