@@ -1280,7 +1280,9 @@ img, svg, video, canvas {
 .mode-demo-muted .demo-metric { color: var(--ink); }
 .mode-demo-muted .demo-label { color: var(--ink-2); }
 
-.mode-demo-ripe .demo-metric { color: var(--mango-orange-vivid); }
+/* Metric color derives from the mango token so [data-color-mode] remaps it:
+   muted → mango-orange, ripe → mango-orange-vivid. Toggling shows the shift. */
+.mode-demo-ripe .demo-metric { color: var(--mango-orange); }
 .mode-demo-ripe .demo-label { color: var(--ink-2); }
 
 .mode-demo-toggle {
@@ -1423,10 +1425,6 @@ img, svg, video, canvas {
   /* Hero adjustments */
   .hero {
     padding: var(--space-6) 0 var(--space-5);
-  }
-
-  .hero h1 br {
-    display: none;
   }
 
   .hero-meta {
@@ -2501,16 +2499,26 @@ function openDrawer() {
   document.getElementById('mobileDrawer').classList.add('open');
   document.getElementById('drawerOverlay').classList.add('open');
   document.getElementById('mobileDrawer').setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden'; // lock background scroll
 }
 
 function closeDrawer() {
   document.getElementById('mobileDrawer').classList.remove('open');
   document.getElementById('drawerOverlay').classList.remove('open');
   document.getElementById('mobileDrawer').setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  document.getElementById('mobileDrawer').querySelector('.mobile-drawer-close').focus();
   setTimeout(() => {
     document.getElementById('drawerOverlay').style.display = 'none';
   }, 250);
 }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const drawer = document.getElementById('mobileDrawer');
+    if (drawer.classList.contains('open')) closeDrawer();
+  }
+});
 
 // ─── GLOBAL MODE TOGGLE ───
 function toggleGlobalMode(mode) {
