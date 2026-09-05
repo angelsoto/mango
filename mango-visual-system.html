@@ -203,6 +203,13 @@ main{ min-width:0; }
   .grid-3{ grid-template-columns: 1fr; }
   .grid-2{ grid-template-columns: 1fr; }
 }
+@media (max-width: 640px){
+  .grid-4, .grid-3, .grid-2, .form-grid{ grid-template-columns: 1fr; }
+  .swatch .fill{ height:96px; }
+  .swatch .tok{ font-size:14px; }
+  .swatch .hex, .swatch .use{ font-size:13.5px; }
+  .badge{ font-size:12.5px; }
+}
 
 /* ============ SWATCH ============ */
 .swatch{
@@ -405,14 +412,11 @@ footer{ padding: 40px 0 70px; text-align:center; }
   .mobile-nav a{ flex-shrink:0; font-size:12.5px; padding:7px 12px; border-radius:999px; border:1px solid var(--line); text-decoration:none; color:var(--ink-2); }
   .mobile-nav a.active{ background: var(--tint-green); color:var(--ink); border-color:transparent; }
   .container{ padding:0 20px; }
-  .grid-4{ grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width:560px){
-  .text-display{ font-size:34px; line-height:38px; }
-  .text-h1{ font-size:30px; line-height:36px; }
-  .text-h2{ font-size:26px; line-height:32px; }
-  .form-grid, .grid-3, .grid-2{ grid-template-columns:1fr; }
-  .grid-4{ grid-template-columns: 1fr 1fr; }
+  .text-display{ font-size:38px; line-height:42px; }
+  .text-h1{ font-size:32px; line-height:38px; }
+  .text-h2{ font-size:27px; line-height:33px; }
 }
 </style>
 
