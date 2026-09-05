@@ -78,6 +78,9 @@
   /* Scroll progress (updated by JS) */
   --scroll-progress: 0;
 
+  /* Logo gradient (presentation cover exception — locked, never in tokens palette) */
+  --logo-gradient: linear-gradient(135deg, #FF9800, #FFC107);
+
   /* Safe area insets (notched devices) */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -92,6 +95,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -1141,6 +1145,19 @@ img, svg, video, canvas {
   font-family: var(--font-mono);
 }
 
+/* ─── TABLE WRAPPER (mobile horizontal scroll) ─── */
+.data-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-sm);
+}
+
+.data-table-wrapper .data-table {
+  margin: 0;
+  min-width: 520px;
+}
+
 /* ─── COPY TOAST ─── */
 .copy-toast {
   position: fixed;
@@ -1273,7 +1290,7 @@ img, svg, video, canvas {
 
 /* ─── PRESENTATION COVER ─── */
 .presentation-cover {
-  background: linear-gradient(135deg, #FF9800, #FFC107);
+  background: var(--logo-gradient);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   text-align: center;
@@ -1424,18 +1441,6 @@ img, svg, video, canvas {
   /* Chart containers shorter */
   .chart-container {
     height: 200px;
-  }
-
-  /* Data tables scroll horizontally */
-  .data-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: var(--space-2) 0;
-  }
-
-  .data-table-wrapper .data-table {
-    min-width: 500px;
-    margin: 0;
   }
 
   /* Checklist goes single column */
@@ -2014,7 +2019,8 @@ img, svg, video, canvas {
         </div>
 
         <h4 class="text-h5" style="margin-bottom: var(--space-2);">Color Usage by Data Type</h4>
-        <table class="data-table">
+        <div class="data-table-wrapper">
+          <table class="data-table">
           <thead>
             <tr><th>Data Type</th><th>Chart Color</th><th>Background</th><th>Notes</th></tr>
           </thead>
@@ -2026,7 +2032,8 @@ img, svg, video, canvas {
             <tr><td>Single series emphasis</td><td>--mango-orange</td><td>Transparent</td><td>Highlight moment</td></tr>
             <tr><td>Target/goal line</td><td>--ink</td><td>Transparent</td><td>1px dashed</td></tr>
           </tbody>
-        </table>
+          </table>
+        </div>
       </section>
 
       <!-- ═══════ PART 2.1: LANDING PAGE ═══════ -->
@@ -2281,7 +2288,8 @@ img, svg, video, canvas {
 
         <!-- Comparison Table -->
         <h3 class="text-h3" style="margin-bottom: var(--space-3);">Comparison Table</h3>
-        <table class="data-table" style="margin-bottom: var(--space-4);">
+        <div class="data-table-wrapper" style="margin-bottom: var(--space-4);">
+          <table class="data-table" style="margin-bottom: 0;">
           <thead>
             <tr><th>Feature</th><th>Before</th><th>After</th></tr>
           </thead>
@@ -2292,7 +2300,8 @@ img, svg, video, canvas {
             <tr><td>Team satisfaction</td><td>3.2/10</td><td class="positive">8.7/10</td></tr>
             <tr><td>Documentation</td><td>None</td><td class="positive">Complete</td></tr>
           </tbody>
-        </table>
+          </table>
+        </div>
       </section>
 
       <!-- ═══════ PART 2.3: IMAGE RECIPES ═══════ -->
@@ -2327,7 +2336,8 @@ img, svg, video, canvas {
           </div>
         </div>
 
-        <table class="data-table">
+        <div class="data-table-wrapper">
+          <table class="data-table">
           <thead>
             <tr><th>Violation</th><th>Detection</th><th>Fix</th></tr>
           </thead>
@@ -2342,7 +2352,8 @@ img, svg, video, canvas {
             <tr><td>Missing focus indicator</td><td>:focus style check</td><td>Add 2px --mango-yellow outline</td></tr>
             <tr><td>Auto-playing carousel</td><td>setInterval detection</td><td>Remove auto-advance</td></tr>
           </tbody>
-        </table>
+          </table>
+        </div>
 
         <h3 class="text-h3" style="margin: var(--space-5) 0 var(--space-3);">New Component Checklist</h3>
         <div class="card">
@@ -2549,15 +2560,20 @@ function copyCode(el) {
   }
 }
 
-// ─── SIDEBAR ACTIVE STATE ───
+// ─── SIDEBAR & DRAWER ACTIVE STATE ───
 const navLinks = document.querySelectorAll('.sidebar-nav a');
+const drawerLinks = document.querySelectorAll('.mobile-drawer-nav a');
 const sections = document.querySelectorAll('section[id]');
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
+      const href = '#' + entry.target.id;
       navLinks.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        link.classList.toggle('active', link.getAttribute('href') === href);
+      });
+      drawerLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === href);
       });
     }
   });
@@ -2609,6 +2625,8 @@ if (typeof Chart !== 'undefined') {
     },
     options: {
       plugins: { legend: { display: false } },
+      responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 } } },
         y: { grid: { color: 'rgba(31, 37, 40, 0.06)' }, ticks: { font: { size: 11 } }, beginAtZero: true }
@@ -2634,6 +2652,8 @@ if (typeof Chart !== 'undefined') {
     },
     options: {
       plugins: { legend: { display: false } },
+      responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: { grid: { display: false } },
         y: { grid: { display: false }, beginAtZero: true }
