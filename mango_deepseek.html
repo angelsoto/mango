@@ -1080,6 +1080,9 @@ img, svg, video, canvas {
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+/* Grid children must be allowed to shrink below their min-content,
+   otherwise a long token/code line/toggle pushes the track past the viewport. */
+.grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; overflow-wrap: anywhere; }
 
 /* ─── CHART CONTAINER ─── */
 .chart-container {
@@ -1151,12 +1154,10 @@ img, svg, video, canvas {
   -webkit-overflow-scrolling: touch;
   margin: var(--space-2) 0;
   border-radius: var(--radius-sm);
+  max-width: 100%;
 }
 
-.data-table-wrapper .data-table {
-  margin: 0;
-  min-width: 520px;
-}
+.data-table-wrapper .data-table { margin: 0; }
 
 /* ─── COPY TOAST ─── */
 .copy-toast {
@@ -1441,6 +1442,11 @@ img, svg, video, canvas {
   /* Chart containers shorter */
   .chart-container {
     height: 200px;
+  }
+
+  /* Let wide tables scroll inside their wrapper rather than push the page */
+  .data-table-wrapper .data-table {
+    min-width: 500px;
   }
 
   /* Checklist goes single column */
